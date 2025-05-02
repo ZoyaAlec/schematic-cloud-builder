@@ -70,8 +70,12 @@ const PropertiesPanel = ({ componentId, onClose }: PropertiesPanelProps) => {
   useEffect(() => {
     if (node) {
       setLabel(node.data.label || '');
-      // Add type assertion to handle the unknown type
-      setProperties(node.data.properties as Record<string, string> || {});
+      // Fix the type error by proper type checking and casting
+      if (node.data.properties && typeof node.data.properties === 'object') {
+        setProperties(node.data.properties as Record<string, string>);
+      } else {
+        setProperties({});
+      }
     }
   }, [node]);
 
