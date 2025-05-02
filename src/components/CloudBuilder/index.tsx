@@ -6,6 +6,7 @@ import PropertiesPanel from './PropertiesPanel';
 import Toolbar from './Toolbar';
 import { useState } from 'react';
 import { ComponentType } from '../../types/componentTypes';
+import { ReactFlowProvider } from '@xyflow/react';
 
 const CloudBuilder = () => {
   const [selectedComponent, setSelectedComponent] = useState<string | null>(null);
@@ -31,31 +32,33 @@ const CloudBuilder = () => {
   };
 
   return (
-    <div className="flex flex-col h-screen overflow-hidden bg-background">
-      <Toolbar 
-        designName={currentDesignName} 
-        onDesignNameChange={setCurrentDesignName}
-        onSaveDesign={handleSaveDesign}
-      />
-      
-      <div className="flex flex-1 overflow-hidden">
-        <Sidebar />
+    <ReactFlowProvider>
+      <div className="flex flex-col h-screen overflow-hidden bg-background">
+        <Toolbar 
+          designName={currentDesignName} 
+          onDesignNameChange={setCurrentDesignName}
+          onSaveDesign={handleSaveDesign}
+        />
         
-        <div className="flex-1 relative">
-          <Canvas 
-            onComponentSelect={handleComponentSelect}
-            onSaveRequest={handleSaveDesign}
-          />
+        <div className="flex flex-1 overflow-hidden">
+          <Sidebar />
+          
+          <div className="flex-1 relative">
+            <Canvas 
+              onComponentSelect={handleComponentSelect}
+              onSaveRequest={handleSaveDesign}
+            />
+          </div>
+          
+          {selectedComponent && (
+            <PropertiesPanel 
+              componentId={selectedComponent}
+              onClose={() => setSelectedComponent(null)}
+            />
+          )}
         </div>
-        
-        {selectedComponent && (
-          <PropertiesPanel 
-            componentId={selectedComponent}
-            onClose={() => setSelectedComponent(null)}
-          />
-        )}
       </div>
-    </div>
+    </ReactFlowProvider>
   );
 };
 

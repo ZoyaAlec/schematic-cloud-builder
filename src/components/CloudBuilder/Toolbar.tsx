@@ -22,7 +22,7 @@ interface ToolbarProps {
 
 const Toolbar = ({ designName, onDesignNameChange, onSaveDesign }: ToolbarProps) => {
   const [isEditing, setIsEditing] = useState(false);
-  const { getNodes, getEdges, zoomIn, zoomOut, fitView } = useReactFlow();
+  const { getNodes, getEdges, zoomIn: reactFlowZoomIn, zoomOut: reactFlowZoomOut, fitView } = useReactFlow();
 
   const handleSave = () => {
     const nodes = getNodes();
@@ -75,6 +75,15 @@ const Toolbar = ({ designName, onDesignNameChange, onSaveDesign }: ToolbarProps)
     }
   };
 
+  // Fixed the zoom functions by wrapping them
+  const handleZoomIn = () => {
+    reactFlowZoomIn();
+  };
+
+  const handleZoomOut = () => {
+    reactFlowZoomOut();
+  };
+
   return (
     <div className="h-14 border-b bg-card flex items-center justify-between px-4">
       <div className="flex items-center">
@@ -100,10 +109,10 @@ const Toolbar = ({ designName, onDesignNameChange, onSaveDesign }: ToolbarProps)
       </div>
       
       <div className="flex items-center gap-2">
-        <Button size="sm" variant="outline" onClick={zoomIn}>
+        <Button size="sm" variant="outline" onClick={handleZoomIn}>
           <ZoomIn className="h-4 w-4" />
         </Button>
-        <Button size="sm" variant="outline" onClick={zoomOut}>
+        <Button size="sm" variant="outline" onClick={handleZoomOut}>
           <ZoomOut className="h-4 w-4" />
         </Button>
         <Button size="sm" variant="outline" onClick={() => fitView()}>

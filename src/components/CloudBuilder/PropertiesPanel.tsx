@@ -70,7 +70,8 @@ const PropertiesPanel = ({ componentId, onClose }: PropertiesPanelProps) => {
   useEffect(() => {
     if (node) {
       setLabel(node.data.label || '');
-      setProperties(node.data.properties || {});
+      // Add type assertion to handle the unknown type
+      setProperties(node.data.properties as Record<string, string> || {});
     }
   }, [node]);
 
@@ -216,7 +217,7 @@ const PropertiesPanel = ({ componentId, onClose }: PropertiesPanelProps) => {
           <div className="space-y-2">
             <h4 className="text-sm font-medium">Suggested Properties</h4>
             <div className="flex flex-wrap gap-1">
-              {Object.keys(getDefaultProperties(node.data.type)).map(prop => (
+              {Object.keys(getDefaultProperties(node.data.type as ComponentType)).map(prop => (
                 !properties[prop] && (
                   <Button
                     key={prop}
