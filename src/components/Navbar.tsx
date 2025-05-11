@@ -21,7 +21,7 @@ const Navbar = ({ showAuth = true }: NavbarProps) => {
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: window.location.origin,
+          redirectTo: `${window.location.origin}/options`,
         }
       });
 
