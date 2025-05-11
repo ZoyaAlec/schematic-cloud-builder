@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
@@ -119,24 +118,27 @@ const SoftwareDesign = () => {
       // Determine resource type based on provider and architecture type
       const resourceType = `${activeProvider}_architecture`;
       
-      // Create the properties object to save
+      // Convert resources to a JSON-compatible format
+      const processedResources = placedResources.map(resource => ({
+        id: resource.id,
+        type: resource.terraformType || resource.type,
+        name: resource.name,
+        description: resource.description,
+        provider: resource.provider,
+        count: resource.count || 1,
+        properties: resource.properties || {},
+        connections: resource.connections || [],
+        cost: resource.cost,
+        costDetails: resource.costDetails
+      }));
+      
+      // Create the properties object to save - ensuring it's JSON compatible
       const properties = {
         provider: activeProvider,
         region: placedResources.length > 0 && placedResources[0].properties?.region 
           ? placedResources[0].properties.region 
           : activeProvider === 'aws' ? 'us-east-1' : 'eastus',
-        resources: placedResources.map(resource => ({
-          id: resource.id,
-          type: resource.terraformType || resource.type,
-          name: resource.name,
-          description: resource.description,
-          provider: resource.provider,
-          count: resource.count,
-          properties: resource.properties || {},
-          connections: resource.connections,
-          cost: resource.cost,
-          costDetails: resource.costDetails
-        }))
+        resources: processedResources
       };
       
       // Insert directly into Supabase
@@ -147,7 +149,7 @@ const SoftwareDesign = () => {
           name: architectureName,
           description: architectureDescription,
           resource_type: resourceType,
-          properties: properties
+          properties: properties as any
         });
         
       if (error) {

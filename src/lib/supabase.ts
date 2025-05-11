@@ -35,12 +35,24 @@ export const saveArchitecture = async (architecture: ArchitectureDesign) => {
   // Determine resource type based on provider
   const resourceType = `${architecture.provider}_architecture`;
   
-  // Create the properties object
+  // Create the properties object that will be JSON-compatible
+  // Manually convert the object to a structure that matches the Json type
   const properties = {
     provider: architecture.provider,
     region: architecture.region,
-    resources: architecture.resources
-  };
+    resources: architecture.resources.map(res => ({
+      id: res.id,
+      type: res.type,
+      name: res.name,
+      description: res.description,
+      provider: res.provider,
+      count: res.count || 1,
+      properties: res.properties || {},
+      connections: res.connections || [],
+      cost: res.cost,
+      costDetails: res.costDetails
+    }))
+  } as unknown as any; // Force type conversion
   
   // Insert using the new table schema
   const { data, error } = await supabaseClient
@@ -117,7 +129,7 @@ export const updateArchitecture = async (id: string, architecture: Partial<Archi
       .eq('id', id)
       .single();
       
-    if (currentData) {
+    if (currentData && currentData.properties) {
       const updatedProperties = { ...currentData.properties };
       
       if (architecture.provider) {
@@ -129,7 +141,19 @@ export const updateArchitecture = async (id: string, architecture: Partial<Archi
       }
       
       if (architecture.resources) {
-        updatedProperties.resources = architecture.resources;
+        // Ensure resources are in a format compatible with JSON
+        updatedProperties.resources = architecture.resources.map(res => ({
+          id: res.id,
+          type: res.type,
+          name: res.name,
+          description: res.description,
+          provider: res.provider,
+          count: res.count || 1,
+          properties: res.properties || {},
+          connections: res.connections || [],
+          cost: res.cost,
+          costDetails: res.costDetails
+        }));
       }
       
       updateObject.properties = updatedProperties;

@@ -41,7 +41,7 @@ export interface ResourceExport {
   description: string;
   provider: 'aws' | 'azure';
   count?: number;
-  properties: {
+  properties?: {
     [key: string]: any;
   };
   connections?: Connection[];
@@ -61,4 +61,3 @@ export interface ArchitectureDesign {
   createdAt?: string;
   updatedAt?: string;
 }
-
