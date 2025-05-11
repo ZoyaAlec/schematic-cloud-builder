@@ -134,7 +134,7 @@ const DragDropDesignerContent: React.FC<DragDropDesignerProps> = ({
   };
 
   const Resource = ({ resource }: { resource: ResourceItem }) => {
-    const [{ isDragging }, drag] = useDrag({
+    const [{ isDragging }, drag] = useDrag<ResourceItem, unknown, { isDragging: boolean }>({
       type: ItemTypes.RESOURCE,
       item: resource,
       end: (item, monitor) => {
@@ -294,12 +294,9 @@ interface DragItemComponentProps {
 }
 
 const DragItemComponent: React.FC<DragItemComponentProps> = ({ resource }) => {
-  const [{ isDragging }, drag] = useDrag({
+  const [{ isDragging }, drag] = useDrag<DragItem, unknown, { isDragging: boolean }>({
     type: ItemTypes.RESOURCE,
     item: resource,
-    begin: () => {
-      return resource;
-    },
     collect: (monitor) => ({
       isDragging: monitor.isDragging(),
     }),
