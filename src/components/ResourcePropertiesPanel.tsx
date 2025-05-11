@@ -153,13 +153,63 @@ const ResourcePropertiesPanel: React.FC<ResourcePropertiesPanelProps> = ({
   };
 
   const handlePropertyChange = (key: string, value: any) => {
-    setEditedResource({
-      ...editedResource,
-      properties: {
-        ...editedResource.properties,
-        [key]: value
+    // If key contains dots or array notation, it's a nested property
+    if (key.includes('.') || key.includes('[')) {
+      const parts = key.split('.');
+      const newProperties = { ...editedResource.properties };
+      
+      // Navigate to the right nested object
+      let current = newProperties;
+      for (let i = 0; i < parts.length - 1; i++) {
+        const part = parts[i];
+        
+        // Handle array notation like "ingress[0]"
+        if (part.includes('[')) {
+          const arrayName = part.split('[')[0];
+          const index = parseInt(part.split('[')[1].replace(']', ''));
+          
+          if (!current[arrayName]) {
+            current[arrayName] = [];
+          }
+          if (!current[arrayName][index]) {
+            current[arrayName][index] = {};
+          }
+          current = current[arrayName][index];
+        } else {
+          if (!current[part]) {
+            current[part] = {};
+          }
+          current = current[part];
+        }
       }
-    });
+      
+      // Set the value
+      const lastPart = parts[parts.length - 1];
+      if (lastPart.includes('[')) {
+        const arrayName = lastPart.split('[')[0];
+        const index = parseInt(lastPart.split('[')[1].replace(']', ''));
+        
+        if (!current[arrayName]) {
+          current[arrayName] = [];
+        }
+        current[arrayName][index] = value;
+      } else {
+        current[lastPart] = value;
+      }
+      
+      setEditedResource({
+        ...editedResource,
+        properties: newProperties
+      });
+    } else {
+      setEditedResource({
+        ...editedResource,
+        properties: {
+          ...editedResource.properties,
+          [key]: value
+        }
+      });
+    }
   };
 
   const handleAddConnection = () => {
@@ -272,6 +322,8 @@ const ResourcePropertiesPanel: React.FC<ResourcePropertiesPanelProps> = ({
               onNameChange={handleNameChange}
               onDescriptionChange={handleDescriptionChange}
               onCountChange={handleCountChange}
+              resourceType={editedResource.type}
+              provider={editedResource.provider}
             />
           )}
           
@@ -281,6 +333,8 @@ const ResourcePropertiesPanel: React.FC<ResourcePropertiesPanelProps> = ({
               onPropertyChange={handlePropertyChange}
               onTerraformTypeChange={handleTerraformTypeChange}
               onExportJson={exportToJson}
+              resourceType={editedResource.type}
+              provider={editedResource.provider}
             />
           )}
           
