@@ -63,14 +63,21 @@ export default {
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
 				},
-        // Cloud design specific colors
-        cloud: {
-          blue: '#3b82f6',
-          teal: '#0ea5e9',
-          dark: '#0f172a',
-          light: '#f1f5f9',
-          gray: '#64748b'
-        },
+				aws: {
+					DEFAULT: '#FF9900',
+					dark: '#EC7211',
+					light: '#FFAC31'
+				},
+				azure: {
+					DEFAULT: '#0078D7',
+					dark: '#106EBE',
+					light: '#50B0FF'
+				},
+				navy: {
+					DEFAULT: '#1A2A42',
+					light: '#2C3E50',
+					dark: '#0F172A'
+				}
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
@@ -80,39 +87,51 @@ export default {
 			keyframes: {
 				'accordion-down': {
 					from: {
-						height: '0'
+						height: '0',
+						opacity: '0'
 					},
 					to: {
-						height: 'var(--radix-accordion-content-height)'
+						height: 'var(--radix-accordion-content-height)',
+						opacity: '1'
 					}
 				},
 				'accordion-up': {
 					from: {
-						height: 'var(--radix-accordion-content-height)'
+						height: 'var(--radix-accordion-content-height)',
+						opacity: '1'
 					},
 					to: {
-						height: '0'
+						height: '0',
+						opacity: '0'
 					}
 				},
-        // Add custom animations
-        'fade-in': {
-          '0%': { opacity: '0' },
-          '100%': { opacity: '1' }
-        },
-        'slide-in': {
-          '0%': { transform: 'translateY(10px)', opacity: '0' },
-          '100%': { transform: 'translateY(0)', opacity: '1' }
-        }
+				'fade-in': {
+					"0%": {
+						opacity: "0",
+						transform: "translateY(10px)"
+					},
+					"100%": {
+						opacity: "1",
+						transform: "translateY(0)"
+					}
+				},
+				'slide-in': {
+					"0%": {
+						opacity: "0",
+						transform: "translateX(-10px)"
+					},
+					"100%": {
+						opacity: "1",
+						transform: "translateX(0)"
+					}
+				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
 				'accordion-up': 'accordion-up 0.2s ease-out',
-        'fade-in': 'fade-in 0.3s ease-out',
-        'slide-in': 'slide-in 0.3s ease-out'
-			},
-      fontFamily: {
-        mono: ['JetBrains Mono', 'Menlo', 'Monaco', 'Courier New', 'monospace']
-      }
+				'fade-in': 'fade-in 0.4s ease-out',
+				'slide-in': 'slide-in 0.4s ease-out'
+			}
 		}
 	},
 	plugins: [require("tailwindcss-animate")],
