@@ -1,6 +1,9 @@
+
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useDrag, useDrop } from 'react-dnd';
+import { DndProvider } from 'react-dnd';
+import { HTML5Backend } from 'react-dnd-html5-backend';
 import { ItemTypes } from '@/types/itemTypes';
 import { AWS_Resources } from '@/Config/Resources/AWS_Resources';
 import { Azure_Resources } from '@/Config/Resources/Azure_Resources';
@@ -47,7 +50,7 @@ interface DragDropDesignerProps {
   onProviderChange: (provider: 'aws' | 'azure') => void;
 }
 
-const DragDropDesigner: React.FC<DragDropDesignerProps> = ({ 
+const DragDropDesignerContent: React.FC<DragDropDesignerProps> = ({ 
   provider, 
   isAiGenerated,
   placedResources,
@@ -104,15 +107,15 @@ const DragDropDesigner: React.FC<DragDropDesignerProps> = ({
   };
 
   const updateResourcePosition = (id: string, clientOffset: { x: number, y: number }) => {
-    setPlacedResources(prevResources =>
-      prevResources.map(resource =>
-        resource.id === id ? { ...resource, x: clientOffset.x, y: clientOffset.y } : resource
-      )
+    const newResources = placedResources.map(resource =>
+      resource.id === id ? { ...resource, x: clientOffset.x, y: clientOffset.y } : resource
     );
+    setPlacedResources(newResources);
   };
 
   const removeResource = (id: string) => {
-    setPlacedResources(prevResources => prevResources.filter(resource => resource.id !== id));
+    const newResources = placedResources.filter(resource => resource.id !== id);
+    setPlacedResources(newResources);
     toast({
       title: "Resource Removed",
       description: "The resource has been removed from the design.",
@@ -274,11 +277,10 @@ const DragDropDesigner: React.FC<DragDropDesignerProps> = ({
             setSelectedResource(null);
           }}
           onUpdate={(updatedResource) => {
-            setPlacedResources(prevResources =>
-              prevResources.map(resource =>
-                resource.id === updatedResource.id ? updatedResource : resource
-              )
+            const updatedResources = placedResources.map(resource =>
+              resource.id === updatedResource.id ? updatedResource : resource
             );
+            setPlacedResources(updatedResources);
           }}
           allResources={placedResources}
           open={resourcePanelOpen}
@@ -316,6 +318,15 @@ const DragItemComponent: React.FC<DragItemComponentProps> = ({ resource }) => {
       {resource.icon && <resource.icon size={20} />}
       <span>{resource.name}</span>
     </div>
+  );
+};
+
+// Wrap with DndProvider
+const DragDropDesigner: React.FC<DragDropDesignerProps> = (props) => {
+  return (
+    <DndProvider backend={HTML5Backend}>
+      <DragDropDesignerContent {...props} />
+    </DndProvider>
   );
 };
 
