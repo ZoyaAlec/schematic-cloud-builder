@@ -1,3 +1,4 @@
+
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useDrag, useDrop } from 'react-dnd';
@@ -58,13 +59,19 @@ const DragDropDesignerContent: React.FC<DragDropDesignerProps> = ({
 }) => {
   const location = useLocation();
   const { toast } = useToast();
-  const [resources, setResources] = useState(provider === 'aws' ? AWS_Resources : Azure_Resources);
+  const [resources, setResources] = useState<ResourceItem[]>(provider === 'aws' ? AWS_Resources : Azure_Resources);
   const [resourcePanelOpen, setResourcePanelOpen] = useState(false);
   const [selectedResource, setSelectedResource] = useState<ResourceItem | null>(null);
   const [isDraggingFromSidebar, setIsDraggingFromSidebar] = useState(false);
   const [isTrashHovering, setIsTrashHovering] = useState(false);
   const [zoomLevel, setZoomLevel] = useState(1);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  // Log resources to debug
+  useEffect(() => {
+    console.log("Current provider:", provider);
+    console.log("Available resources:", provider === 'aws' ? AWS_Resources : Azure_Resources);
+  }, [provider]);
 
   useEffect(() => {
     setResources(provider === 'aws' ? AWS_Resources : Azure_Resources);
@@ -231,16 +238,22 @@ const DragDropDesignerContent: React.FC<DragDropDesignerProps> = ({
         </div>
 
         <div className="flex-grow overflow-y-auto">
-          {resources.map((resource) => (
-            <div
-              key={resource.id}
-              className="bg-white dark:bg-gray-800 rounded-md shadow-sm p-3 mb-2 cursor-grab"
-              draggable
-              onDragStart={() => onDragStart()}
-            >
-              <DragItemComponent resource={resource} />
+          {resources && resources.length > 0 ? (
+            resources.map((resource) => (
+              <div
+                key={resource.id}
+                className="bg-white dark:bg-gray-800 rounded-md shadow-sm p-3 mb-2 cursor-grab"
+                draggable
+                onDragStart={() => onDragStart()}
+              >
+                <DragItemComponent resource={resource} />
+              </div>
+            ))
+          ) : (
+            <div className="text-center py-4 text-gray-500">
+              No resources available for the selected provider.
             </div>
-          ))}
+          )}
         </div>
       </div>
 
