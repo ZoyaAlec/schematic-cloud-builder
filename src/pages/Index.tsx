@@ -1,5 +1,4 @@
-
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Cloud, Server, Database, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -10,12 +9,27 @@ import { useToast } from '@/hooks/use-toast';
 const Index = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Check for authentication on initial load
+  useEffect(() => {
+    const checkAuthState = async () => {
+      const { data } = await supabase.auth.getSession();
+      if (data?.session) {
+        // User is already logged in, could navigate to dashboard
+        // or just leave them on the landing page
+      }
+    };
+    
+    checkAuthState();
+  }, [navigate]);
 
   const handleAuthAction = (action: string) => {
     navigate(`/options?auth=${action}`);
   };
 
   const handleGoogleAuth = async () => {
+    setIsLoading(true);
     try {
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
@@ -34,6 +48,7 @@ const Index = () => {
         description: error.message || "Could not sign in with Google",
         variant: "destructive",
       });
+      setIsLoading(false);
     }
   };
 
@@ -57,6 +72,7 @@ const Index = () => {
               <Button 
                 size="lg" 
                 onClick={handleGoogleAuth}
+                disabled={isLoading}
                 className="cloud-btn-primary flex items-center gap-2"
               >
                 <svg viewBox="0 0 24 24" width="18" height="18" xmlns="http://www.w3.org/2000/svg">
@@ -64,7 +80,7 @@ const Index = () => {
                     <path d="M21.35,11.1H12v3.2h5.59c-0.25,1.45-1.52,4.2-5.59,4.2c-3.36,0-6.11-2.78-6.11-6.2s2.75-6.2,6.11-6.2 c1.93,0,3.2,0.82,3.93,1.53l2.54-2.45C16.46,3.42,14.39,2.5,12,2.5c-5.52,0-10,4.48-10,10s4.48,10,10,10c5.8,0,9.64-4.07,9.64-9.8 C21.64,12.14,21.52,11.6,21.35,11.1z" fill="#ffffff"></path>
                   </g>
                 </svg>
-                Sign Up with Google
+                {isLoading ? "Signing in..." : "Sign Up with Google"}
               </Button>
               <Button 
                 size="lg" 

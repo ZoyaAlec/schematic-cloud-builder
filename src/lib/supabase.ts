@@ -130,7 +130,8 @@ export const updateArchitecture = async (id: string, architecture: Partial<Archi
       .single();
       
     if (currentData && currentData.properties) {
-      const updatedProperties = { ...currentData.properties };
+      // Use type assertion to ensure currentData.properties is treated as an object
+      const updatedProperties = { ...(currentData.properties as Record<string, any>) };
       
       if (architecture.provider) {
         updatedProperties.provider = architecture.provider;
