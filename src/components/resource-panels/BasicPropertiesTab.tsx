@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { ResourceItem } from '@/types/resource';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -19,6 +19,27 @@ const BasicPropertiesTab: React.FC<BasicPropertiesTabProps> = ({
   onDescriptionChange,
   onCountChange,
 }) => {
+  // Initialize properties with options to their first value when the resource changes
+  useEffect(() => {
+    if (resource.properties) {
+      // For each property that has metadata with options
+      Object.entries(resource.properties).forEach(([key, value]) => {
+        if (
+          typeof value === 'object' && 
+          value !== null && 
+          !Array.isArray(value) && 
+          'options' in value && 
+          Array.isArray(value.options) && 
+          value.options.length > 0 &&
+          !value.value // Only set if value is not already set
+        ) {
+          // Set the property to the first option
+          onPropertyChange(key, value.options[0]);
+        }
+      });
+    }
+  }, [resource.id, onPropertyChange]);
+
   return (
     <>
       <div className="space-y-2">

@@ -40,7 +40,7 @@ const PropertyRenderer: React.FC<PropertyRendererProps> = ({
 }) => {
   return Object.entries(obj).map(([key, value]) => {
     // Skip rendering metadata properties that aren't meant for display
-    if (key === 'type' || key === 'required') {
+    if (key === 'type' || key === 'required' || key === 'options') {
       return null;
     }
 
@@ -124,8 +124,9 @@ const PropertyRenderer: React.FC<PropertyRendererProps> = ({
           {/* Dropdown for properties with options */}
           {propertyOptions && propertyOptions.length > 0 ? (
             <Select
-              value={value as string}
+              value={String(value)}
               onValueChange={(newValue) => onPropertyChange(key, newValue)}
+              defaultValue={propertyOptions[0]}
             >
               <SelectTrigger className="text-xs">
                 <SelectValue placeholder={propertyOptions[0]} />
@@ -165,7 +166,7 @@ const PropertyRenderer: React.FC<PropertyRendererProps> = ({
         </div>
       );
     }
-  }).filter(Boolean); // Filter out null entries (like type and required)
+  }).filter(Boolean); // Filter out null entries (like type, required and options)
 };
 
 export default PropertyRenderer;
