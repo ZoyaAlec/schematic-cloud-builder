@@ -2,7 +2,7 @@
 import React from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Plus } from 'lucide-react';
+import { Plus, Asterisk } from 'lucide-react';
 import { 
   Select,
   SelectContent,
@@ -55,7 +55,7 @@ const PropertyRenderer: React.FC<PropertyRendererProps> = ({
         <div key={fullKey} className="ml-4 mt-3">
           <div className="text-sm font-medium mb-1">
             {key}
-            {isRequired && <span className="text-red-500 ml-1">*</span>}
+            {isRequired && <Asterisk className="h-3 w-3 inline ml-1 text-red-500" />}
           </div>
           <PropertyRenderer 
             obj={value} 
@@ -70,7 +70,7 @@ const PropertyRenderer: React.FC<PropertyRendererProps> = ({
         <div key={fullKey} className="ml-4 mt-3">
           <div className="text-sm font-medium mb-1">
             {key} (array)
-            {isRequired && <span className="text-red-500 ml-1">*</span>}
+            {isRequired && <Asterisk className="h-3 w-3 inline ml-1 text-red-500" />}
           </div>
           {value.map((item, index) => (
             <div key={`${fullKey}-${index}`} className="ml-4">
@@ -113,7 +113,7 @@ const PropertyRenderer: React.FC<PropertyRendererProps> = ({
         <div key={fullKey} className="flex flex-col space-y-1 mt-3">
           <label htmlFor={`property-${fullKey}`} className="text-sm font-medium">
             {key}
-            {isRequired && <span className="text-red-500 ml-1">*</span>}
+            {isRequired && <Asterisk className="h-3 w-3 inline ml-1 text-red-500" />}
             {propMetadata.description && (
               <span className="text-xs text-muted-foreground ml-1">
                 ({propMetadata.description})
