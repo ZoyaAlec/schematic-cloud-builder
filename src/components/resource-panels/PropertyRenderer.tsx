@@ -131,7 +131,7 @@ const PropertyRenderer: React.FC<PropertyRendererProps> = ({
               <SelectTrigger className="text-xs">
                 <SelectValue placeholder={propertyOptions[0]} />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-background">
                 {propertyOptions.map((option) => (
                   <SelectItem key={option} value={option} className="text-xs">
                     {option}

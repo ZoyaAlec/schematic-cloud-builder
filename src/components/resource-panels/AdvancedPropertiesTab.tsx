@@ -31,13 +31,22 @@ const AdvancedPropertiesTab: React.FC<AdvancedPropertiesTabProps> = ({
     
     Object.entries(props).forEach(([key, value]) => {
       // Skip metadata properties
-      if (key !== 'type' && key !== 'required') {
-        // If value is an object, recursively clean it
-        if (value !== null && typeof value === 'object' && !Array.isArray(value)) {
-          cleaned[key] = cleanPropertiesForExport(value);
+      if (key === 'type' || key === 'required' || key === 'options') {
+        return;
+      }
+      
+      // If value is an object with metadata properties, extract just the actual value
+      if (value !== null && typeof value === 'object' && !Array.isArray(value)) {
+        if ('options' in value && Array.isArray(value.options)) {
+          // For properties with options, just take the selected value
+          cleaned[key] = value.value || (value.options.length > 0 ? value.options[0] : null);
         } else {
-          cleaned[key] = value;
+          // For nested objects, recursively clean
+          cleaned[key] = cleanPropertiesForExport(value);
         }
+      } else {
+        // Simple values just pass through
+        cleaned[key] = value;
       }
     });
     
