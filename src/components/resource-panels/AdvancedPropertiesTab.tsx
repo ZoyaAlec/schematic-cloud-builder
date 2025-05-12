@@ -39,7 +39,10 @@ const AdvancedPropertiesTab: React.FC<AdvancedPropertiesTabProps> = ({
       if (value !== null && typeof value === 'object' && !Array.isArray(value)) {
         if ('options' in value && Array.isArray(value.options)) {
           // For properties with options, just take the selected value
-          cleaned[key] = value.value || (value.options.length > 0 ? value.options[0] : null);
+          // Check if the property has a value field, otherwise use the first option if available
+          const hasValueProperty = Object.prototype.hasOwnProperty.call(value, 'value');
+          cleaned[key] = hasValueProperty ? (value as any).value : 
+                         (Array.isArray(value.options) && value.options.length > 0 ? value.options[0] : null);
         } else {
           // For nested objects, recursively clean
           cleaned[key] = cleanPropertiesForExport(value);
