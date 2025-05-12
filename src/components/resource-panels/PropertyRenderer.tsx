@@ -48,7 +48,8 @@ const PropertyRenderer: React.FC<PropertyRendererProps> = ({
     
     // Extract metadata properties if they exist
     let isRequired = false;
-    let propertyType = typeof value;
+    // Use a variable that holds the string representation of the type, not the actual type
+    let propertyTypeStr: 'string' | 'number' | 'boolean' | 'object' = 'string';
     let propertyOptions: string[] | undefined;
     
     // Handle the case where value is a metadata object with type, required, options
@@ -58,7 +59,11 @@ const PropertyRenderer: React.FC<PropertyRendererProps> = ({
       }
       
       if ('type' in value) {
-        propertyType = String(value.type);
+        // Convert the type string to our allowed type strings
+        const typeValue = String(value.type);
+        if (typeValue === 'string' || typeValue === 'number' || typeValue === 'boolean' || typeValue === 'object') {
+          propertyTypeStr = typeValue;
+        }
       }
       
       if ('options' in value && Array.isArray(value.options)) {
@@ -118,7 +123,7 @@ const PropertyRenderer: React.FC<PropertyRendererProps> = ({
                   ))}
                 </SelectContent>
               </Select>
-            ) : propertyType === 'boolean' ? (
+            ) : propertyTypeStr === 'boolean' ? (
               <div className="flex items-center space-x-2">
                 <Switch
                   id={`property-switch-${fullKey}`}
@@ -136,9 +141,9 @@ const PropertyRenderer: React.FC<PropertyRendererProps> = ({
               <Input
                 id={`property-${fullKey}`}
                 value={String(selectedValue ?? '')}
-                type={propertyType === 'number' ? 'number' : 'text'}
+                type={propertyTypeStr === 'number' ? 'number' : 'text'}
                 onChange={(e) => {
-                  const newValue = propertyType === 'number' ? 
+                  const newValue = propertyTypeStr === 'number' ? 
                     Number(e.target.value) : e.target.value;
                   const updatedValue = {...value, value: newValue};
                   onPropertyChange(key, updatedValue);
@@ -212,6 +217,11 @@ const PropertyRenderer: React.FC<PropertyRendererProps> = ({
       );
     } else {
       // Handle basic values (string, number, boolean)
+      // Determine the property type based on the actual value
+      const actualType = typeof value;
+      const displayType = actualType === 'boolean' ? 'boolean' : 
+                         actualType === 'number' ? 'number' : 'string';
+      
       return (
         <div key={fullKey} className="flex flex-col space-y-1 mt-3">
           <label htmlFor={`property-${fullKey}`} className="text-sm font-medium">
@@ -236,7 +246,7 @@ const PropertyRenderer: React.FC<PropertyRendererProps> = ({
                 ))}
               </SelectContent>
             </Select>
-          ) : propertyType === 'boolean' ? (
+          ) : displayType === 'boolean' ? (
             <div className="flex items-center space-x-2">
               <Switch
                 id={`property-switch-${fullKey}`}
@@ -251,9 +261,9 @@ const PropertyRenderer: React.FC<PropertyRendererProps> = ({
             <Input
               id={`property-${fullKey}`}
               value={String(value ?? '')}
-              type={propertyType === 'number' ? 'number' : 'text'}
+              type={displayType === 'number' ? 'number' : 'text'}
               onChange={(e) => {
-                const newValue = propertyType === 'number' ? 
+                const newValue = displayType === 'number' ? 
                   Number(e.target.value) : e.target.value;
                 onPropertyChange(key, newValue);
               }}

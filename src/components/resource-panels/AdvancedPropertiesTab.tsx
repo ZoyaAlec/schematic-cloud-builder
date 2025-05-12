@@ -40,10 +40,14 @@ const AdvancedPropertiesTab: React.FC<AdvancedPropertiesTabProps> = ({
         if ('options' in value && Array.isArray(value.options)) {
           // For properties with options, just take the selected value
           // Check if the property has a value field, otherwise use the first option if available
-          const hasValueProperty = Object.prototype.hasOwnProperty.call(value, 'value');
-          cleaned[key] = hasValueProperty ? (value as any).value : 
-                         (Array.isArray(value.options) && value.options.length > 0 ? value.options[0] : null);
-        } else if ('value' in value) {
+          if ('value' in (value as any)) {
+            cleaned[key] = (value as any).value;
+          } else if (Array.isArray(value.options) && value.options.length > 0) {
+            cleaned[key] = value.options[0];
+          } else {
+            cleaned[key] = null;
+          }
+        } else if ('value' in (value as any)) {
           // For objects with a value property, take that value
           cleaned[key] = (value as any).value;
         } else {
