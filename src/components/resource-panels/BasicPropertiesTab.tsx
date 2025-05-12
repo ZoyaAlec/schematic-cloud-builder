@@ -1,65 +1,88 @@
 
 import React from 'react';
-import { ResourceItem } from '@/types/resource';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { ResourceItem } from '@/types/resource';
+import PropertyRenderer from './PropertyRenderer';
 
 interface BasicPropertiesTabProps {
   resource: ResourceItem;
-  onPropertyChange: (key: string, value: any) => void;
   onNameChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onDescriptionChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
   onCountChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onPropertyChange: (key: string, value: any) => void;
+  resourceType?: string;
+  provider?: 'aws' | 'azure';
 }
 
 const BasicPropertiesTab: React.FC<BasicPropertiesTabProps> = ({
   resource,
-  onPropertyChange,
   onNameChange,
   onDescriptionChange,
   onCountChange,
+  onPropertyChange,
+  resourceType,
+  provider
 }) => {
   return (
-    <>
-      <div className="space-y-2">
-        <label htmlFor="name" className="text-sm font-medium">Name</label>
-        <Input
-          id="name"
-          value={resource.name}
-          onChange={onNameChange}
-          className="w-full"
-        />
+    <div className="space-y-4">
+      <div className="grid grid-cols-1 gap-4">
+        <div>
+          <label htmlFor="name" className="block text-sm font-medium mb-1">
+            Resource Name
+          </label>
+          <Input
+            id="name"
+            placeholder="My Resource"
+            value={resource.name}
+            onChange={onNameChange}
+            className="w-full"
+          />
+        </div>
+        
+        <div>
+          <label htmlFor="description" className="block text-sm font-medium mb-1">
+            Description
+          </label>
+          <Textarea
+            id="description"
+            placeholder="Resource description"
+            value={resource.description}
+            onChange={onDescriptionChange}
+            className="w-full"
+          />
+        </div>
+        
+        <div>
+          <label htmlFor="count" className="block text-sm font-medium mb-1">
+            Count (number of instances)
+          </label>
+          <Input
+            id="count"
+            type="number"
+            min="1"
+            placeholder="1"
+            value={resource.count || 1}
+            onChange={onCountChange}
+            className="w-full"
+          />
+        </div>
       </div>
       
-      <div className="space-y-2">
-        <label htmlFor="description" className="text-sm font-medium">Description</label>
-        <Textarea
-          id="description"
-          value={resource.description}
-          onChange={onDescriptionChange}
-          className="w-full"
-          rows={3}
-        />
-      </div>
-      
-      <div className="space-y-2">
-        <label htmlFor="count" className="text-sm font-medium">Count</label>
-        <Input
-          id="count"
-          type="number"
-          min="1"
-          value={resource.count || 1}
-          onChange={onCountChange}
-          className="w-full"
-        />
-        <p className="text-xs text-muted-foreground">Number of instances to create</p>
-      </div>
-      
-      <div>
-        <h4 className="text-sm font-medium mb-3">Resource Type</h4>
-        <p className="text-muted-foreground capitalize">{resource.type}</p>
-      </div>
-    </>
+      {resource.properties && Object.keys(resource.properties).length > 0 && (
+        <>
+          <h4 className="font-medium mt-4">Basic Properties</h4>
+          <div className="border rounded-md p-3 bg-background">
+            <PropertyRenderer 
+              obj={resource.properties}
+              onPropertyChange={onPropertyChange}
+              resourceType={resourceType}
+              provider={provider}
+            />
+          </div>
+        </>
+      )}
+    </div>
   );
 };
 
