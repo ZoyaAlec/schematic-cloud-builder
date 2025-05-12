@@ -5,6 +5,8 @@ import { ResourceItem, ArchitectureDesign, Connection, ResourceExport } from '@/
 import { useToast } from '@/hooks/use-toast';
 import ResourcePropertiesPanel from './ResourcePropertiesPanel';
 import { ResizablePanelGroup, ResizablePanel } from '@/components/ui/resizable';
+import { AWS_Resources } from '../Config/Resources/AWS_Resources';
+import { Azure_Resources } from '../Config/Resources/Azure_Resources';
 
 interface DragDropDesignerProps {
   provider: 'aws' | 'azure';
@@ -32,145 +34,31 @@ const DragDropDesigner: React.FC<DragDropDesignerProps> = ({
   const canvasRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
-  const awsResourceItems: ResourceItem[] = [
-    {
-      id: 'aws-ec2',
-      type: 'compute',
-      name: 'EC2 Instance',
-      icon: Server,
-      description: 'Scalable compute capacity in the cloud',
-      provider: 'aws',
-      cost: 35.04,
-      costDetails: '1 instance × $0.0416/hour × 730 hours',
-      terraformType: 'aws_instance'
-    },
-    {
-      id: 'aws-s3',
-      type: 'storage',
-      name: 'S3 Bucket',
-      icon: Database,
-      description: 'Object storage built to retrieve any amount of data',
-      provider: 'aws',
-      cost: 23.00,
-      costDetails: '500 GB × $0.023/GB',
-      terraformType: 'aws_s3_bucket'
-    },
-    {
-      id: 'aws-rds',
-      type: 'database',
-      name: 'RDS Database',
-      icon: Database,
-      description: 'Managed relational database service',
-      provider: 'aws',
-      cost: 178.25,
-      costDetails: 'db.t3.medium, Multi-AZ deployment',
-      terraformType: 'aws_db_instance'
-    },
-    {
-      id: 'aws-vpc',
-      type: 'network',
-      name: 'VPC',
-      icon: Network,
-      description: 'Isolated cloud network with custom IP address range',
-      provider: 'aws',
-      cost: 0,
-      costDetails: 'No hourly charges for VPC',
-      terraformType: 'aws_vpc'
-    },
-    {
-      id: 'aws-security-group',
-      type: 'security',
-      name: 'Security Group',
-      icon: Shield,
-      description: 'Virtual firewall to control inbound and outbound traffic',
-      provider: 'aws',
-      cost: 0,
-      costDetails: 'No charges for security groups',
-      terraformType: 'aws_security_group'
-    },
-    {
-      id: 'aws-lb',
-      type: 'network',
-      name: 'Load Balancer',
-      icon: Network,
-      description: 'Distributes incoming traffic across targets',
-      provider: 'aws',
-      cost: 16.43,
-      costDetails: '1 ALB × $0.0225/hour × 730 hours',
-      terraformType: 'aws_lb'
-    },
-  ];
-  
-  const azureResourceItems: ResourceItem[] = [
-    {
-      id: 'azure-vm',
-      type: 'compute',
-      name: 'Virtual Machine',
-      icon: Server,
-      description: 'Highly available, scalable cloud compute resources',
-      provider: 'azure',
-      cost: 36.50,
-      costDetails: '1 instance × $36.50 each',
-      terraformType: 'azurerm_virtual_machine'
-    },
-    {
-      id: 'azure-storage',
-      type: 'storage',
-      name: 'Blob Storage',
-      icon: Database,
-      description: 'Massively scalable object storage for unstructured data',
-      provider: 'azure',
-      cost: 18.40,
-      costDetails: '500 GB × $0.0184/GB (Hot tier)',
-      terraformType: 'azurerm_storage_account'
-    },
-    {
-      id: 'azure-sql',
-      type: 'database',
-      name: 'Azure SQL',
-      icon: Database,
-      description: 'Intelligent, scalable, cloud database service',
-      provider: 'azure',
-      cost: 149.16,
-      costDetails: 'Standard tier, 10 DTUs',
-      terraformType: 'azurerm_sql_server'
-    },
-    {
-      id: 'azure-vnet',
-      type: 'network',
-      name: 'Virtual Network',
-      icon: Network,
-      description: 'Isolated, private network in Azure',
-      provider: 'azure',
-      cost: 0,
-      costDetails: 'No charges for virtual networks',
-      terraformType: 'azurerm_virtual_network'
-    },
-    {
-      id: 'azure-nsg',
-      type: 'security',
-      name: 'Network Security Group',
-      icon: Shield,
-      description: 'Filter network traffic to and from Azure resources',
-      provider: 'azure',
-      cost: 0,
-      costDetails: 'No charges for NSGs',
-      terraformType: 'azurerm_network_security_group'
-    },
-    {
-      id: 'azure-lb',
-      type: 'network',
-      name: 'Load Balancer',
-      icon: Network,
-      description: 'Distribute network traffic across VMs',
-      provider: 'azure',
-      cost: 18.25,
-      costDetails: '1 basic LB × $0.025/hour × 730 hours',
-      terraformType: 'azurerm_lb'
-    },
-  ];
+  // Use type assertion to ensure TypeScript recognizes these as ResourceItem arrays
+  const awsResourceItems = AWS_Resources as unknown as ResourceItem[];
+  const azureResourceItems = Azure_Resources as unknown as ResourceItem[];
   
   const resourceItems = initialProvider === 'aws' ? awsResourceItems : azureResourceItems;
+  
+  // Generate a unique ID for new resource based on type and existing resources
+  const generateResourceId = (resourceType: string) => {
+    const typeResources = placedResources.filter(r => 
+      r.id.startsWith(`${initialProvider}-${resourceType}`)
+    );
+    
+    const nextNumber = typeResources.length + 1;
+    return `${initialProvider}-${resourceType}-${nextNumber}`;
+  };
+  
+  // Generate a name for the resource based on type and existing resources
+  const generateResourceName = (resourceType: string) => {
+    const typeResources = placedResources.filter(r => 
+      r.name.toLowerCase().includes(resourceType.toLowerCase())
+    );
+    
+    const nextNumber = typeResources.length + 1;
+    return `${resourceType.charAt(0).toUpperCase() + resourceType.slice(1)}_${nextNumber}`;
+  };
   
   const handleDragStart = (item: ResourceItem) => {
     setDraggedItem({...item, id: `${item.id}-${Date.now()}`});
@@ -187,13 +75,35 @@ const DragDropDesigner: React.FC<DragDropDesignerProps> = ({
       const x = e.clientX - rect.left;
       const y = e.clientY - rect.top;
       
-      const newItem = {...draggedItem, x, y};
+      // Generate a proper ID and name for the resource
+      const resourceType = draggedItem.type;
+      const resourceId = generateResourceId(resourceType);
+      const resourceName = generateResourceName(resourceType);
+      
+      const newItem = {
+        ...draggedItem, 
+        id: resourceId,
+        name: resourceName,
+        x, 
+        y
+      };
+      
+      // Make sure newItem.icon exists before adding the resource
+      if (!newItem.icon) {
+        // Use a default icon based on the resource type
+        newItem.icon = newItem.type === 'database' ? Database :
+                      newItem.type === 'compute' ? Server :
+                      newItem.type === 'network' ? Network : 
+                      newItem.type === 'security' ? Shield : 
+                      Cloud;
+      }
+      
       setPlacedResources([...placedResources, newItem]);
       setDraggedItem(null);
       
       toast({
         title: "Resource Added",
-        description: `${draggedItem.name} has been added to your architecture.`,
+        description: `${resourceName} has been added to your architecture.`,
       });
     }
   };
@@ -353,23 +263,48 @@ const DragDropDesigner: React.FC<DragDropDesignerProps> = ({
   };
 
   const exportArchitecture = () => {
+    // Create clean export by filtering out metadata properties
+    const cleanResources = placedResources.map(resource => {
+      // Clean up properties to remove type and required metadata
+      const cleanProperties: {[key: string]: any} = {};
+      
+      if (resource.properties) {
+        Object.entries(resource.properties).forEach(([key, value]) => {
+          // Skip metadata properties
+          if (key !== 'type' && key !== 'required') {
+            // If value is an object, recursively clean it
+            if (value !== null && typeof value === 'object' && !Array.isArray(value)) {
+              const cleanSubProperties: {[key: string]: any} = {};
+              
+              Object.entries(value).forEach(([subKey, subValue]) => {
+                if (subKey !== 'type' && subKey !== 'required') {
+                  cleanSubProperties[subKey] = subValue;
+                }
+              });
+              
+              cleanProperties[key] = cleanSubProperties;
+            } else {
+              cleanProperties[key] = value;
+            }
+          }
+        });
+      }
+      
+      return {
+        id: resource.id,
+        type: resource.terraformType || resource.type,
+        properties: cleanProperties
+      };
+    });
+    
     const architecture: ArchitectureDesign = {
       provider: initialProvider,
       region: placedResources.length > 0 && placedResources[0].properties?.region 
         ? placedResources[0].properties.region 
         : initialProvider === 'aws' ? 'us-east-1' : 'eastus',
-      resources: placedResources.map(resource => ({
-        id: resource.id,
-        type: resource.terraformType || resource.type,
-        name: resource.name,
-        description: resource.description,
-        provider: resource.provider,
-        count: resource.count,
-        properties: resource.properties || {},
-        connections: resource.connections,
-        cost: resource.cost,
-        costDetails: resource.costDetails
-      }))
+      resources: cleanResources,
+      variables: [],
+      outputs: []
     };
     
     const jsonData = JSON.stringify(architecture, null, 2);
@@ -509,22 +444,34 @@ const DragDropDesigner: React.FC<DragDropDesignerProps> = ({
             <h3 className="font-semibold mb-4">Resources</h3>
             
             <div className="space-y-3">
-              {resourceItems.map((item) => (
-                <div
-                  key={item.id}
-                  className="drag-item p-3 bg-muted/50 dark:bg-navy/50 rounded-lg flex items-center cursor-move hover:bg-muted dark:hover:bg-navy transition-colors"
-                  draggable
-                  onDragStart={() => handleDragStart(item)}
-                >
-                  <div className={`w-8 h-8 ${getProviderColorClass(item.provider)} rounded-md flex items-center justify-center mr-3`}>
-                    <item.icon className="h-4 w-4" />
+              {resourceItems.map((item) => {
+                // Make sure item.icon exists before rendering
+                if (!item.icon) {
+                  // Use a default icon based on the resource type
+                  item.icon = item.type === 'database' ? Database :
+                              item.type === 'compute' ? Server :
+                              item.type === 'network' ? Network : 
+                              item.type === 'security' ? Shield : 
+                              Cloud;
+                }
+
+                return (
+                  <div
+                    key={item.id}
+                    className="drag-item p-3 bg-muted/50 dark:bg-navy/50 rounded-lg flex items-center cursor-move hover:bg-muted dark:hover:bg-navy transition-colors"
+                    draggable
+                    onDragStart={() => handleDragStart(item)}
+                  >
+                    <div className={`w-8 h-8 ${getProviderColorClass(item.provider)} rounded-md flex items-center justify-center mr-3`}>
+                      {React.createElement(item.icon, { className: "h-4 w-4" })}
+                    </div>
+                    <div>
+                      <div className="font-medium text-sm">{item.name}</div>
+                      <div className="text-xs text-muted-foreground capitalize">{item.type}</div>
+                    </div>
                   </div>
-                  <div>
-                    <div className="font-medium text-sm">{item.name}</div>
-                    <div className="text-xs text-muted-foreground capitalize">{item.type}</div>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
             
             <div className="mt-6 pt-4 border-t border-border">
@@ -556,72 +503,84 @@ const DragDropDesigner: React.FC<DragDropDesignerProps> = ({
             {/* Connection lines between resources */}
             {renderConnections()}
             
-            {placedResources.map((item) => (
-              <div
-                key={item.id}
-                className={`absolute shadow-md bg-white dark:bg-navy-light rounded-lg border ${
-                  selectedResource?.id === item.id ? 'border-2 border-primary' : 'border-border'
-                } ${connectionStart === item.id ? 'ring-2 ring-blue-400' : ''} 
-                p-3 w-40 cursor-move hover:shadow-lg transition-shadow`}
-                style={{ 
-                  left: `${item.x}px`, 
-                  top: `${item.y}px`,
-                  zIndex: draggingResource === item.id || selectedResource?.id === item.id ? 10 : 1
-                }}
-                onClick={(e) => handleResourceClick(item, e)}
-                onMouseDown={(e) => handleMouseDown(item.id, e)}
-              >
-                <div className="flex items-center mb-1">
-                  <div className={`w-6 h-6 ${getProviderColorClass(item.provider)} rounded-md flex items-center justify-center mr-2`}>
-                    <item.icon className="h-3 w-3" />
+            {placedResources.map((item) => {
+              // Make sure item.icon exists before rendering
+              if (!item.icon) {
+                // Use a default icon based on the resource type
+                item.icon = item.type === 'database' ? Database :
+                            item.type === 'compute' ? Server :
+                            item.type === 'network' ? Network : 
+                            item.type === 'security' ? Shield : 
+                            Cloud;
+              }
+
+              return (
+                <div
+                  key={item.id}
+                  className={`absolute shadow-md bg-white dark:bg-navy-light rounded-lg border ${
+                    selectedResource?.id === item.id ? 'border-2 border-primary' : 'border-border'
+                  } ${connectionStart === item.id ? 'ring-2 ring-blue-400' : ''} 
+                  p-3 w-40 cursor-move hover:shadow-lg transition-shadow`}
+                  style={{ 
+                    left: `${item.x}px`, 
+                    top: `${item.y}px`,
+                    zIndex: draggingResource === item.id || selectedResource?.id === item.id ? 10 : 1
+                  }}
+                  onClick={(e) => handleResourceClick(item, e)}
+                  onMouseDown={(e) => handleMouseDown(item.id, e)}
+                >
+                  <div className="flex items-center mb-1">
+                    <div className={`w-6 h-6 ${getProviderColorClass(item.provider)} rounded-md flex items-center justify-center mr-2`}>
+                      {React.createElement(item.icon, { className: "h-3 w-3" })}
+                    </div>
+                    <div className="font-medium text-sm truncate">{item.name}</div>
                   </div>
-                  <div className="font-medium text-sm truncate">{item.name}</div>
+                  <div className="text-xs text-muted-foreground mb-1 truncate">{item.description}</div>
+                  {item.count && item.count > 1 && (
+                    <div className="text-xs font-semibold mb-1">Count: {item.count}</div>
+                  )}
+                  {item.terraformType && (
+                    <div className="text-xs text-muted-foreground mb-1 truncate">{item.terraformType}</div>
+                  )}
+                  
+                  <div className="flex justify-end space-x-1 mt-1">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6"
+                      onClick={(e) => handleStartConnection(item.id, e)}
+                      title="Create connection"
+                    >
+                      <Link className="h-3 w-3" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleResourceClick(item, e);
+                      }}
+                      title="View details"
+                    >
+                      <Info className="h-3 w-3" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6 hover:text-destructive"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteResource(item.id);
+                      }}
+                      title="Delete resource"
+                    >
+                      <Trash className="h-3 w-3" />
+                    </Button>
+                  </div>
                 </div>
-                <div className="text-xs text-muted-foreground mb-1 truncate">{item.description}</div>
-                {item.count && item.count > 1 && (
-                  <div className="text-xs font-semibold mb-1">Count: {item.count}</div>
-                )}
-                {item.terraformType && (
-                  <div className="text-xs text-muted-foreground mb-1 truncate">{item.terraformType}</div>
-                )}
-                
-                <div className="flex justify-end space-x-1 mt-1">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-6 w-6"
-                    onClick={(e) => handleStartConnection(item.id, e)}
-                    title="Create connection"
-                  >
-                    <Link className="h-3 w-3" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-6 w-6"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleResourceClick(item, e);
-                    }}
-                    title="View details"
-                  >
-                    <Info className="h-3 w-3" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-6 w-6 hover:text-destructive"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDeleteResource(item.id);
-                    }}
-                    title="Delete resource"
-                  >
-                    <Trash className="h-3 w-3" />
-                  </Button>
-                </div>
-              </div>
-            ))}
+              );
+            })}
             
             {placedResources.length === 0 && (
               <div className="h-full flex items-center justify-center text-muted-foreground">

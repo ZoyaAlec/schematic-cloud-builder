@@ -23,12 +23,33 @@ const AdvancedPropertiesTab: React.FC<AdvancedPropertiesTabProps> = ({
 }) => {
   const { toast } = useToast();
   
+  // Clean properties for export by removing metadata properties
+  const cleanPropertiesForExport = (props: any) => {
+    if (!props) return {};
+    
+    const cleaned: {[key: string]: any} = {};
+    
+    Object.entries(props).forEach(([key, value]) => {
+      // Skip metadata properties
+      if (key !== 'type' && key !== 'required') {
+        // If value is an object, recursively clean it
+        if (value !== null && typeof value === 'object' && !Array.isArray(value)) {
+          cleaned[key] = cleanPropertiesForExport(value);
+        } else {
+          cleaned[key] = value;
+        }
+      }
+    });
+    
+    return cleaned;
+  };
+  
   const resourceJson = {
     id: resource.id,
     type: resource.terraformType,
     name: resource.name,
     count: resource.count,
-    properties: resource.properties,
+    properties: cleanPropertiesForExport(resource.properties),
     connections: resource.connections
   };
   

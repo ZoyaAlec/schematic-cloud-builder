@@ -35,24 +35,12 @@ export const saveArchitecture = async (architecture: ArchitectureDesign) => {
   // Determine resource type based on provider
   const resourceType = `${architecture.provider}_architecture`;
   
-  // Create the properties object that will be JSON-compatible
-  // Manually convert the object to a structure that matches the Json type
+  // Create a JSON serializable version of the architecture
   const properties = {
     provider: architecture.provider,
     region: architecture.region,
-    resources: architecture.resources.map(res => ({
-      id: res.id,
-      type: res.type,
-      name: res.name,
-      description: res.description,
-      provider: res.provider,
-      count: res.count || 1,
-      properties: res.properties || {},
-      connections: res.connections || [],
-      cost: res.cost,
-      costDetails: res.costDetails
-    }))
-  } as unknown as any; // Force type conversion
+    resources: architecture.resources
+  };
   
   // Insert using the new table schema
   const { data, error } = await supabaseClient
@@ -62,7 +50,7 @@ export const saveArchitecture = async (architecture: ArchitectureDesign) => {
       name: architecture.name || 'Untitled Architecture',
       description: architecture.description || '',
       resource_type: resourceType,
-      properties: properties
+      properties: properties as any
     })
     .select();
 
@@ -142,19 +130,7 @@ export const updateArchitecture = async (id: string, architecture: Partial<Archi
       }
       
       if (architecture.resources) {
-        // Ensure resources are in a format compatible with JSON
-        updatedProperties.resources = architecture.resources.map(res => ({
-          id: res.id,
-          type: res.type,
-          name: res.name,
-          description: res.description,
-          provider: res.provider,
-          count: res.count || 1,
-          properties: res.properties || {},
-          connections: res.connections || [],
-          cost: res.cost,
-          costDetails: res.costDetails
-        }));
+        updatedProperties.resources = architecture.resources;
       }
       
       updateObject.properties = updatedProperties;

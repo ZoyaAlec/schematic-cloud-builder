@@ -1,6 +1,7 @@
 export const Azure_Resources = [
     {
         "type": "azurerm_virtual_machine",
+        "cost": 200.00, // Average cost for standard VM sizes
         "properties": {
             "name": { "type": "string", "required": true, "options": [] },
             "location": { "type": "string", "required": true, "options": [] },
@@ -76,6 +77,7 @@ export const Azure_Resources = [
     },
     {
         "type": "azurerm_storage_account",
+        "cost": 50.00, // Average cost for standard storage
         "properties": {
             "name": { "type": "string", "required": true, "options": [] },
             "resource_group_name": { "type": "string", "required": true, "options": [] },
@@ -125,6 +127,7 @@ export const Azure_Resources = [
     },
     {
         "type": "azurerm_app_service_plan",
+        "cost": 150.00, // Average cost for standard tier
         "properties": {
             "name": { "type": "string", "required": true, "options": [] },
             "location": { "type": "string", "required": true, "options": [] },
@@ -157,6 +160,7 @@ export const Azure_Resources = [
     },
     {
         "type": "azurerm_app_service",
+        "cost": 100.00, // Additional cost on top of App Service Plan
         "properties": {
             "name": { "type": "string", "required": true, "options": [] },
             "location": { "type": "string", "required": true, "options": [] },
@@ -205,6 +209,7 @@ export const Azure_Resources = [
     },
     {
         "type": "azurerm_function_app",
+        "cost": 75.00, // Average cost for Function Apps
         "properties": {
             "name": { "type": "string", "required": true, "options": [] },
             "location": { "type": "string", "required": true, "options": [] },
@@ -245,6 +250,7 @@ export const Azure_Resources = [
     },
     {
         "type": "azurerm_virtual_network",
+        "cost": 0.00, // Free resource
         "properties": {
             "name": { "type": "string", "required": true, "options": [] },
             "location": { "type": "string", "required": true, "options": [] },
@@ -264,6 +270,7 @@ export const Azure_Resources = [
     },
     {
         "type": "azurerm_subnet",
+        "cost": 0.00, // Free resource
         "properties": {
             "name": { "type": "string", "required": true, "options": [] },
             "resource_group_name": { "type": "string", "required": true, "options": [] },
@@ -304,6 +311,7 @@ export const Azure_Resources = [
     },
     {
         "type": "azurerm_network_security_group",
+        "cost": 0.00, // Free resource
         "properties": {
             "name": { "type": "string", "required": true, "options": [] },
             "location": { "type": "string", "required": true, "options": [] },
@@ -340,6 +348,7 @@ export const Azure_Resources = [
     },
     {
         "type": "azurerm_public_ip",
+        "cost": 5.00, // Basic cost for public IP
         "properties": {
             "name": { "type": "string", "required": true, "options": [] },
             "location": { "type": "string", "required": true, "options": [] },
@@ -367,6 +376,7 @@ export const Azure_Resources = [
     },
     {
         "type": "azurerm_sql_server",
+        "cost": 150.00, // Basic SQL Server cost
         "properties": {
             "name": { "type": "string", "required": true, "options": [] },
             "location": { "type": "string", "required": true, "options": [] },
@@ -394,6 +404,7 @@ export const Azure_Resources = [
     },
     {
         "type": "azurerm_sql_database",
+        "cost": 100.00, // Basic SQL Database cost
         "properties": {
             "name": { "type": "string", "required": true, "options": [] },
             "resource_group_name": { "type": "string", "required": true, "options": [] },
@@ -432,6 +443,7 @@ export const Azure_Resources = [
     },
     {
         "type": "azurerm_cosmosdb_account",
+        "cost": 120.00, // Average Cosmos DB cost
         "properties": {
             "name": { "type": "string", "required": true, "options": [] },
             "location": { "type": "string", "required": true, "options": [] },
@@ -486,6 +498,7 @@ export const Azure_Resources = [
     },
     {
         "type": "azurerm_kubernetes_cluster",
+        "cost": 300.00, // Average AKS cluster cost
         "properties": {
             "name": { "type": "string", "required": true, "options": [] },
             "location": { "type": "string", "required": true, "options": [] },
@@ -544,6 +557,7 @@ export const Azure_Resources = [
     },
     {
         "type": "azurerm_container_registry",
+        "cost": 50.00, // Basic ACR cost
         "properties": {
             "name": { "type": "string", "required": true, "options": [] },
             "resource_group_name": { "type": "string", "required": true, "options": [] },
@@ -560,6 +574,7 @@ export const Azure_Resources = [
     },
     {
         "type": "azurerm_servicebus_namespace",
+        "cost": 25.00, // Basic Service Bus cost
         "properties": {
             "name": { "type": "string", "required": true, "options": [] },
             "location": { "type": "string", "required": true, "options": [] },
@@ -576,6 +591,7 @@ export const Azure_Resources = [
     },
     {
         "type": "azurerm_servicebus_queue",
+        "cost": 10.00, // Additional cost per queue
         "properties": {
             "name": { "type": "string", "required": true, "options": [] },
             "namespace_name": { "type": "string", "required": true, "options": [] },
@@ -590,6 +606,7 @@ export const Azure_Resources = [
     },
     {
         "type": "azurerm_eventhub_namespace",
+        "cost": 30.00, // Basic Event Hub cost
         "properties": {
             "name": { "type": "string", "required": true, "options": [] },
             "location": { "type": "string", "required": true, "options": [] },
@@ -608,6 +625,7 @@ export const Azure_Resources = [
     },
     {
         "type": "azurerm_eventhub",
+        "cost": 15.00, // Additional cost per event hub
         "properties": {
             "name": { "type": "string", "required": true, "options": [] },
             "namespace_name": { "type": "string", "required": true, "options": [] },
@@ -641,6 +659,7 @@ export const Azure_Resources = [
     },
     {
         "type": "azurerm_redis_cache",
+        "cost": 80.00, // Basic Redis Cache cost
         "properties": {
             "name": { "type": "string", "required": true, "options": [] },
             "location": { "type": "string", "required": true, "options": [] },
@@ -692,6 +711,7 @@ export const Azure_Resources = [
     },
     {
         "type": "azurerm_key_vault",
+        "cost": 10.00, // Basic Key Vault cost
         "properties": {
             "name": { "type": "string", "required": true, "options": [] },
             "location": { "type": "string", "required": true, "options": [] },
@@ -760,6 +780,7 @@ export const Azure_Resources = [
     },
     {
         "type": "azurerm_monitor_action_group",
+        "cost": 0.00, // Free resource
         "properties": {
             "name": { "type": "string", "required": true, "options": [] },
             "resource_group_name": { "type": "string", "required": true, "options": [] },
@@ -794,6 +815,7 @@ export const Azure_Resources = [
     },
     {
         "type": "azurerm_data_factory",
+        "cost": 200.00, // Basic Data Factory cost
         "properties": {
             "name": { "type": "string", "required": true, "options": [] },
             "location": { "type": "string", "required": true, "options": [] },
@@ -825,6 +847,7 @@ export const Azure_Resources = [
     },
     {
         "type": "azurerm_storage_container",
+        "cost": 0.00, // Free resource (storage costs apply separately)
         "properties": {
             "name": { "type": "string", "required": true, "options": [] },
             "storage_account_name": { "type": "string", "required": true, "options": [] },
@@ -837,6 +860,7 @@ export const Azure_Resources = [
     },
     {
         "type": "azurerm_cdn_profile",
+        "cost": 100.00, // Basic CDN profile cost
         "properties": {
             "name": { "type": "string", "required": true, "options": [] },
             "location": { "type": "string", "required": true, "options": [] },
@@ -851,6 +875,7 @@ export const Azure_Resources = [
     },
     {
         "type": "azurerm_cdn_endpoint",
+        "cost": 50.00, // Additional cost per endpoint
         "properties": {
             "name": { "type": "string", "required": true, "options": [] },
             "profile_name": { "type": "string", "required": true, "options": [] },
@@ -877,6 +902,7 @@ export const Azure_Resources = [
     },
     {
         "type": "azurerm_mysql_server",
+        "cost": 120.00, // Basic MySQL server cost
         "properties": {
             "name": { "type": "string", "required": true, "options": [] },
             "location": { "type": "string", "required": true, "options": [] },
@@ -896,6 +922,7 @@ export const Azure_Resources = [
     },
     {
         "type": "azurerm_postgresql_server",
+        "cost": 120.00, // Basic PostgreSQL server cost
         "properties": {
             "name": { "type": "string", "required": true, "options": [] },
             "location": { "type": "string", "required": true, "options": [] },
@@ -915,6 +942,7 @@ export const Azure_Resources = [
     },
     {
         "type": "azurerm_databricks_workspace",
+        "cost": 500.00, // Basic Databricks workspace cost
         "properties": {
             "name": { "type": "string", "required": true, "options": [] },
             "location": { "type": "string", "required": true, "options": [] },
@@ -930,6 +958,7 @@ export const Azure_Resources = [
     },
     {
         "type": "azurerm_synapse_workspace",
+        "cost": 400.00, // Basic Synapse workspace cost
         "properties": {
             "name": { "type": "string", "required": true, "options": [] },
             "location": { "type": "string", "required": true, "options": [] },
@@ -943,6 +972,7 @@ export const Azure_Resources = [
     },
     {
         "type": "azurerm_application_insights",
+        "cost": 10.00, // Basic Application Insights cost
         "properties": {
             "name": { "type": "string", "required": true, "options": [] },
             "location": { "type": "string", "required": true, "options": [] },
@@ -958,6 +988,7 @@ export const Azure_Resources = [
     },
     {
         "type": "azurerm_log_analytics_workspace",
+        "cost": 50.00, // Basic Log Analytics cost
         "properties": {
             "name": { "type": "string", "required": true, "options": [] },
             "location": { "type": "string", "required": true, "options": [] },
@@ -973,6 +1004,7 @@ export const Azure_Resources = [
     },
     {
         "type": "azurerm_machine_learning_workspace",
+        "cost": 300.00, // Basic ML workspace cost
         "properties": {
             "name": { "type": "string", "required": true, "options": [] },
             "location": { "type": "string", "required": true, "options": [] },
@@ -996,6 +1028,7 @@ export const Azure_Resources = [
     },
     {
         "type": "azurerm_batch_account",
+        "cost": 100.00, // Basic Batch account cost
         "properties": {
             "name": { "type": "string", "required": true, "options": [] },
             "location": { "type": "string", "required": true, "options": [] },
@@ -1011,6 +1044,7 @@ export const Azure_Resources = [
     },
     {
         "type": "azurerm_batch_pool",
+        "cost": 200.00, // Basic Batch pool cost (plus VM costs)
         "properties": {
             "name": { "type": "string", "required": true, "options": [] },
             "resource_group_name": { "type": "string", "required": true, "options": [] },
@@ -1047,6 +1081,7 @@ export const Azure_Resources = [
     },
     {
         "type": "azurerm_automation_account",
+        "cost": 20.00, // Basic Automation account cost
         "properties": {
             "name": { "type": "string", "required": true, "options": [] },
             "location": { "type": "string", "required": true, "options": [] },
@@ -1061,6 +1096,7 @@ export const Azure_Resources = [
     },
     {
         "type": "azurerm_managed_disk",
+        "cost": 50.00, // Average managed disk cost
         "properties": {
             "name": { "type": "string", "required": true, "options": [] },
             "location": { "type": "string", "required": true, "options": [] },
@@ -1082,6 +1118,7 @@ export const Azure_Resources = [
     },
     {
         "type": "azurerm_frontdoor",
+        "cost": 150.00, // Basic Front Door cost
         "properties": {
             "name": { "type": "string", "required": true, "options": [] },
             "resource_group_name": { "type": "string", "required": true, "options": [] },
@@ -1166,6 +1203,7 @@ export const Azure_Resources = [
     },
     {
         "type": "azurerm_api_management",
+        "cost": 300.00, // Basic API Management cost
         "properties": {
             "name": { "type": "string", "required": true, "options": [] },
             "location": { "type": "string", "required": true, "options": [] },
@@ -1193,6 +1231,7 @@ export const Azure_Resources = [
     },
     {
         "type": "azurerm_api_management_api",
+        "cost": 50.00, // Additional cost per API
         "properties": {
             "name": { "type": "string", "required": true, "options": [] },
             "resource_group_name": { "type": "string", "required": true, "options": [] },
@@ -1210,6 +1249,7 @@ export const Azure_Resources = [
     },
     {
         "type": "azurerm_iot_hub",
+        "cost": 50.00, // Basic IoT Hub cost
         "properties": {
             "name": { "type": "string", "required": true, "options": [] },
             "location": { "type": "string", "required": true, "options": [] },
@@ -1258,6 +1298,7 @@ export const Azure_Resources = [
     },
     {
         "type": "azurerm_stream_analytics_job",
+        "cost": 100.00, // Basic Stream Analytics cost
         "properties": {
             "name": { "type": "string", "required": true, "options": [] },
             "location": { "type": "string", "required": true, "options": [] },
@@ -1274,6 +1315,7 @@ export const Azure_Resources = [
     },
     {
         "type": "azurerm_signalr_service",
+        "cost": 50.00, // Basic SignalR service cost
         "properties": {
             "name": { "type": "string", "required": true, "options": [] },
             "location": { "type": "string", "required": true, "options": [] },
@@ -1300,6 +1342,7 @@ export const Azure_Resources = [
     },
     {
         "type": "azurerm_purview_account",
+        "cost": 200.00, // Basic Purview account cost
         "properties": {
             "name": { "type": "string", "required": true, "options": [] },
             "location": { "type": "string", "required": true, "options": [] },
@@ -1320,6 +1363,7 @@ export const Azure_Resources = [
     },
     {
         "type": "azuread_application",
+        "cost": 0.00, // Free resource
         "properties": {
             "display_name": { "type": "string", "required": true, "options": [] },
             "identifier_uris": { "type": "list", "required": false, "options": [] },
@@ -1412,6 +1456,7 @@ export const Azure_Resources = [
     },
     {
         "type": "azuread_service_principal",
+        "cost": 0.00, // Free resource
         "properties": {
             "application_id": { "type": "string", "required": true, "options": [] },
             "app_role_assignment_required": { "type": "bool", "required": false, "options": [] },
@@ -1441,6 +1486,7 @@ export const Azure_Resources = [
     },
     {
         "type": "azuread_user",
+        "cost": 6.00, // Azure AD P1 license cost per user
         "properties": {
             "user_principal_name": { "type": "string", "required": true, "options": [] },
             "display_name": { "type": "string", "required": true, "options": [] },
@@ -1479,6 +1525,7 @@ export const Azure_Resources = [
     },
     {
         "type": "azuread_group",
+        "cost": 0.00, // Free resource
         "properties": {
             "display_name": { "type": "string", "required": true, "options": [] },
             "description": { "type": "string", "required": false, "options": [] },
@@ -1509,6 +1556,7 @@ export const Azure_Resources = [
     },
     {
         "type": "azuread_conditional_access_policy",
+        "cost": 0.00, // Free resource (requires Azure AD P1/P2)
         "properties": {
             "display_name": { "type": "string", "required": true, "options": [] },
             "state": {
@@ -1623,6 +1671,7 @@ export const Azure_Resources = [
     },
     {
         "type": "azuread_application_password",
+        "cost": 0.00, // Free resource
         "properties": {
             "application_object_id": { "type": "string", "required": true, "options": [] },
             "display_name": { "type": "string", "required": false, "options": [] },
@@ -1634,6 +1683,7 @@ export const Azure_Resources = [
     },
     {
         "type": "azuread_service_principal_password",
+        "cost": 0.00, // Free resource
         "properties": {
             "service_principal_id": { "type": "string", "required": true, "options": [] },
             "display_name": { "type": "string", "required": false, "options": [] },
@@ -1645,6 +1695,7 @@ export const Azure_Resources = [
     },
     {
         "type": "azuread_application_certificate",
+        "cost": 0.00, // Free resource
         "properties": {
             "application_object_id": { "type": "string", "required": true, "options": [] },
             "type": {
@@ -1666,6 +1717,7 @@ export const Azure_Resources = [
     },
     {
         "type": "azuread_service_principal_certificate",
+        "cost": 0.00, // Free resource
         "properties": {
             "service_principal_id": { "type": "string", "required": true, "options": [] },
             "type": {
@@ -1687,6 +1739,7 @@ export const Azure_Resources = [
     },
     {
         "type": "azuread_claims_mapping_policy",
+        "cost": 0.00, // Free resource
         "properties": {
             "display_name": { "type": "string", "required": true, "options": [] },
             "definition": { "type": "list", "required": true, "options": [] }
@@ -1694,6 +1747,7 @@ export const Azure_Resources = [
     },
     {
         "type": "azuread_directory_role",
+        "cost": 0.00, // Free resource
         "properties": {
             "display_name": { "type": "string", "required": true, "options": [] },
             "template_id": { "type": "string", "required": false, "options": [] },
@@ -1702,6 +1756,7 @@ export const Azure_Resources = [
     },
     {
         "type": "azuread_directory_role_assignment",
+        "cost": 0.00, // Free resource
         "properties": {
             "role_id": { "type": "string", "required": true, "options": [] },
             "principal_object_id": { "type": "string", "required": true, "options": [] }
@@ -1709,6 +1764,7 @@ export const Azure_Resources = [
     },
     {
         "type": "azuread_invitation",
+        "cost": 0.00, // Free resource
         "properties": {
             "user_email_address": { "type": "string", "required": true, "options": [] },
             "redirect_url": { "type": "string", "required": true, "options": [] },
@@ -1731,6 +1787,7 @@ export const Azure_Resources = [
     },
     {
         "type": "azuread_named_location",
+        "cost": 0.00, // Free resource
         "properties": {
             "display_name": { "type": "string", "required": true, "options": [] },
             "country": {
@@ -1753,6 +1810,7 @@ export const Azure_Resources = [
     },
     {
         "type": "azuread_administrative_unit",
+        "cost": 0.00, // Free resource
         "properties": {
             "display_name": { "type": "string", "required": true, "options": [] },
             "description": { "type": "string", "required": false, "options": [] },
@@ -1769,6 +1827,7 @@ export const Azure_Resources = [
     },
     {
         "type": "azuread_application_federated_identity_credential",
+        "cost": 0.00, // Free resource
         "properties": {
             "application_object_id": { "type": "string", "required": true, "options": [] },
             "display_name": { "type": "string", "required": true, "options": [] },
@@ -1780,6 +1839,7 @@ export const Azure_Resources = [
     },
     {
         "type": "azuread_authentication_strength_policy",
+        "cost": 0.00, // Free resource
         "properties": {
             "display_name": { "type": "string", "required": true, "options": [] },
             "description": { "type": "string", "required": false, "options": [] },
@@ -1795,6 +1855,7 @@ export const Azure_Resources = [
     },
     {
         "type": "azuread_custom_directory_role",
+        "cost": 0.00, // Free resource
         "properties": {
             "display_name": { "type": "string", "required": true, "options": [] },
             "description": { "type": "string", "required": false, "options": [] },
@@ -1811,6 +1872,7 @@ export const Azure_Resources = [
     },
     {
         "type": "azuread_directory_role_member",
+        "cost": 0.00, // Free resource
         "properties": {
             "role_object_id": { "type": "string", "required": true, "options": [] },
             "member_object_id": { "type": "string", "required": true, "options": [] }
@@ -1818,6 +1880,7 @@ export const Azure_Resources = [
     },
     {
         "type": "azuread_group_member",
+        "cost": 0.00, // Free resource
         "properties": {
             "group_object_id": { "type": "string", "required": true, "options": [] },
             "member_object_id": { "type": "string", "required": true, "options": [] }

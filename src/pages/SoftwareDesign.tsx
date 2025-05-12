@@ -118,21 +118,13 @@ const SoftwareDesign = () => {
       // Determine resource type based on provider and architecture type
       const resourceType = `${activeProvider}_architecture`;
       
-      // Convert resources to a JSON-compatible format
+      // Convert resources to export format
       const processedResources = placedResources.map(resource => ({
         id: resource.id,
-        type: resource.terraformType || resource.type,
-        name: resource.name,
-        description: resource.description,
-        provider: resource.provider,
-        count: resource.count || 1,
-        properties: resource.properties || {},
-        connections: resource.connections || [],
-        cost: resource.cost,
-        costDetails: resource.costDetails
+        type: resource.terraformType || resource.type
       }));
       
-      // Create the properties object to save - ensuring it's JSON compatible
+      // Create the properties object to save
       const properties = {
         provider: activeProvider,
         region: placedResources.length > 0 && placedResources[0].properties?.region 
@@ -140,21 +132,20 @@ const SoftwareDesign = () => {
           : activeProvider === 'aws' ? 'us-east-1' : 'eastus',
         resources: processedResources
       };
+
+      // Create architecture object that matches the expected type
+      const architecture: ArchitectureDesign = {
+        provider: activeProvider,
+        region: properties.region,
+        resources: processedResources,
+        name: architectureName,
+        description: architectureDescription,
+        variables: [],
+        outputs: []
+      };
       
-      // Insert directly into Supabase
-      const { error } = await supabase
-        .from('architectures')
-        .insert({
-          user_id: userId,
-          name: architectureName,
-          description: architectureDescription,
-          resource_type: resourceType,
-          properties: properties as any
-        });
-        
-      if (error) {
-        throw new Error(error.message);
-      }
+      // Insert directly into Supabase using the saveArchitecture function
+      const result = await saveArchitectureToSupabase(architecture);
       
       toast({
         title: "Architecture Saved",

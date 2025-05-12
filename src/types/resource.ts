@@ -5,6 +5,8 @@ export interface ResourceProperty {
   name: string;
   value: string;
   description?: string;
+  type?: 'string' | 'number' | 'boolean' | 'object';
+  required?: boolean;
   options?: string[];
 }
 
@@ -18,46 +20,36 @@ export interface ResourceItem {
   id: string;
   type: string;
   name: string;
-  icon: LucideIcon;
-  description: string;
+  description?: string;
   provider: 'aws' | 'azure';
   cost: number;
   costDetails?: string;
+  terraformType?: string;
+  icon?: LucideIcon;
   x?: number;
   y?: number;
   count?: number;
-  terraformType?: string;
+  connections?: Connection[];
   properties?: {
     [key: string]: any;
   };
-  connections?: Connection[];
 }
 
 // For architecture export without UI-specific properties
 export interface ResourceExport {
   id: string;
   type: string;
-  name: string;
-  description: string;
-  provider: 'aws' | 'azure';
-  count?: number;
   properties?: {
     [key: string]: any;
   };
-  connections?: Connection[];
-  cost?: number;
-  costDetails?: string;
 }
 
 export interface ArchitectureDesign {
-  id?: string;
-  name?: string;
-  description?: string;
   provider: 'aws' | 'azure';
   region: string;
   resources: ResourceExport[];
-  connections?: Connection[];
-  userId?: string;
-  createdAt?: string;
-  updatedAt?: string;
+  name?: string;
+  description?: string;
+  variables: any[];
+  outputs: any[];
 }

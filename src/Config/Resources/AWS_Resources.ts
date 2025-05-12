@@ -36,7 +36,8 @@ export const AWS_Resources = [
             },
             "ebs_block_device": { "type": "list", "required": false, "options": [] },
             "tags": { "type": "map", "required": false, "options": [] }
-        }
+        },
+        "cost": 24.192 // m5.24xlarge On-Demand hourly rate * 730 hours
     },
     {
         "type": "aws_s3_bucket",
@@ -80,7 +81,8 @@ export const AWS_Resources = [
             "lifecycle_rule": { "type": "list", "required": false, "options": [] },
             "policy": { "type": "string", "required": false, "options": [] },
             "tags": { "type": "map", "required": false, "options": [] }
-        }
+        },
+        "cost": 0.023 // Maximum S3 storage cost per GB per month
     },
     {
         "type": "aws_lambda_function",
@@ -111,7 +113,8 @@ export const AWS_Resources = [
             "vpc_config": { "type": "map", "required": false, "options": [] },
             "layers": { "type": "list", "required": false, "options": [] },
             "tags": { "type": "map", "required": false, "options": [] }
-        }
+        },
+        "cost": 0.0000166667 // Maximum Lambda cost per 1ms execution (3008MB memory)
     },
     {
         "type": "aws_db_instance",
@@ -150,7 +153,8 @@ export const AWS_Resources = [
             "backup_window": { "type": "string", "required": false, "options": [] },
             "maintenance_window": { "type": "string", "required": false, "options": [] },
             "tags": { "type": "map", "required": false, "options": [] }
-        }
+        },
+        "cost": 32.772 // db.r5.24xlarge On-Demand hourly rate * 730 hours
     },
     {
         "type": "aws_vpc",
@@ -164,7 +168,8 @@ export const AWS_Resources = [
             "enable_dns_support": { "type": "bool", "required": false, "options": [] },
             "enable_dns_hostnames": { "type": "bool", "required": false, "options": [] },
             "tags": { "type": "map", "required": false, "options": [] }
-        }
+        },
+        "cost": 0.00 // VPC itself has no cost, only associated resources
     },
     {
         "type": "aws_subnet",
@@ -174,7 +179,8 @@ export const AWS_Resources = [
             "availability_zone": { "type": "string", "required": false, "options": [] },
             "map_public_ip_on_launch": { "type": "bool", "required": false, "options": [] },
             "tags": { "type": "map", "required": false, "options": [] }
-        }
+        },
+        "cost": 0.00 // Subnets themselves have no cost
     },
     {
         "type": "aws_security_group",
@@ -212,7 +218,8 @@ export const AWS_Resources = [
                 }
             },
             "tags": { "type": "map", "required": false, "options": [] }
-        }
+        },
+        "cost": 0.00 // Security groups themselves have no cost
     },
     {
         "type": "aws_iam_role",
@@ -224,7 +231,8 @@ export const AWS_Resources = [
             "max_session_duration": { "type": "number", "required": false, "options": [] },
             "permissions_boundary": { "type": "string", "required": false, "options": [] },
             "tags": { "type": "map", "required": false, "options": [] }
-        }
+        },
+        "cost": 0.00 // IAM roles themselves have no cost
     },
     {
         "type": "aws_route53_record",
@@ -247,7 +255,8 @@ export const AWS_Resources = [
                     "evaluate_target_health": { "type": "bool", "required": false }
                 }
             }
-        }
+        },
+        "cost": 0.60 // Most expensive Route53 record type (Alias queries)
     },
     {
         "type": "aws_cloudfront_distribution",
@@ -336,7 +345,8 @@ export const AWS_Resources = [
                 }
             },
             "tags": { "type": "map", "required": false, "options": [] }
-        }
+        },
+        "cost": 0.850 // Most expensive CloudFront distribution (per GB transfer)
     },
     {
         "type": "aws_api_gateway_rest_api",
@@ -358,7 +368,8 @@ export const AWS_Resources = [
             },
             "policy": { "type": "string", "required": false, "options": [] },
             "tags": { "type": "map", "required": false, "options": [] }
-        }
+        },
+        "cost": 3.50 // API Gateway REST API per million requests
     },
     {
         "type": "aws_dynamodb_table",
@@ -403,7 +414,8 @@ export const AWS_Resources = [
                 }
             },
             "tags": { "type": "map", "required": false, "options": [] }
-        }
+        },
+        "cost": 1.25 // DynamoDB on-demand max cost per million write request units
     },
     {
         "type": "aws_ecs_cluster",
@@ -423,7 +435,8 @@ export const AWS_Resources = [
                 }
             },
             "tags": { "type": "map", "required": false, "options": [] }
-        }
+        },
+        "cost": 0.10 // ECS cluster cost per hour (with Container Insights)
     },
     {
         "type": "aws_ecs_task_definition",
@@ -442,7 +455,8 @@ export const AWS_Resources = [
             "requires_compatibilities": { "type": "list", "required": false, "options": [] },
             "volume": { "type": "list", "required": false, "options": [] },
             "tags": { "type": "map", "required": false, "options": [] }
-        }
+        },
+        "cost": 0.00 // Task definitions themselves have no cost
     },
     {
         "type": "aws_eks_cluster",
@@ -473,7 +487,8 @@ export const AWS_Resources = [
                 "options": ["api", "audit", "authenticator", "controllerManager", "scheduler"]
             },
             "tags": { "type": "map", "required": false, "options": [] }
-        }
+        },
+        "cost": 0.20 // EKS cluster cost per hour
     },
     {
         "type": "aws_elasticache_cluster",
@@ -492,7 +507,8 @@ export const AWS_Resources = [
             "subnet_group_name": { "type": "string", "required": false, "options": [] },
             "security_group_ids": { "type": "list", "required": false, "options": [] },
             "tags": { "type": "map", "required": false, "options": [] }
-        }
+        },
+        "cost": 5.568 // Largest Elasticache node type (r6gd.16xlarge) hourly rate * 730 hours
     },
     {
         "type": "aws_kinesis_stream",
@@ -516,7 +532,8 @@ export const AWS_Resources = [
             },
             "kms_key_id": { "type": "string", "required": false, "options": [] },
             "tags": { "type": "map", "required": false, "options": [] }
-        }
+        },
+        "cost": 0.015 // Kinesis cost per shard hour
     },
     {
         "type": "aws_sns_topic",
@@ -529,7 +546,8 @@ export const AWS_Resources = [
             "fifo_topic": { "type": "bool", "required": false, "options": [] },
             "content_based_deduplication": { "type": "bool", "required": false, "options": [] },
             "tags": { "type": "map", "required": false, "options": [] }
-        }
+        },
+        "cost": 0.50 // SNS cost per million notifications
     },
     {
         "type": "aws_sqs_queue",
@@ -547,7 +565,8 @@ export const AWS_Resources = [
             "kms_master_key_id": { "type": "string", "required": false, "options": [] },
             "kms_data_key_reuse_period_seconds": { "type": "number", "required": false, "options": [] },
             "tags": { "type": "map", "required": false, "options": [] }
-        }
+        },
+        "cost": 0.40 // SQS FIFO queue cost per million requests
     },
     {
         "type": "aws_rds_cluster",
@@ -574,7 +593,8 @@ export const AWS_Resources = [
             "kms_key_id": { "type": "string", "required": false, "options": [] },
             "enable_http_endpoint": { "type": "bool", "required": false, "options": [] },
             "tags": { "type": "map", "required": false, "options": [] }
-        }
+        },
+        "cost": 4.745 // Aurora Serverless v2 max ACU cost per hour * 730 hours
     },
     {
         "type": "aws_cloudwatch_event_rule",
@@ -586,7 +606,8 @@ export const AWS_Resources = [
             "role_arn": { "type": "string", "required": false, "options": [] },
             "is_enabled": { "type": "bool", "required": false, "options": [] },
             "tags": { "type": "map", "required": false, "options": [] }
-        }
+        },
+        "cost": 1.00 // CloudWatch Events cost per million events
     },
     {
         "type": "aws_cloudwatch_event_target",
@@ -597,7 +618,8 @@ export const AWS_Resources = [
             "input": { "type": "string", "required": false, "options": [] },
             "input_path": { "type": "string", "required": false, "options": [] },
             "role_arn": { "type": "string", "required": false, "options": [] }
-        }
+        },
+        "cost": 0.00 // Targets themselves have no additional cost
     },
     {
         "type": "aws_cloudwatch_log_group",
@@ -610,7 +632,8 @@ export const AWS_Resources = [
             },
             "kms_key_id": { "type": "string", "required": false, "options": [] },
             "tags": { "type": "map", "required": false, "options": [] }
-        }
+        },
+        "cost": 0.50 // CloudWatch Logs cost per GB ingested
     },
     {
         "type": "aws_ecr_repository",
@@ -641,7 +664,8 @@ export const AWS_Resources = [
                 }
             },
             "tags": { "type": "map", "required": false, "options": [] }
-        }
+        },
+        "cost": 0.10 // ECR cost per GB-month
     },
     {
         "type": "aws_elastic_beanstalk_application",
@@ -658,7 +682,8 @@ export const AWS_Resources = [
                 }
             },
             "tags": { "type": "map", "required": false, "options": [] }
-        }
+        },
+        "cost": 0.00 // Elastic Beanstalk application itself has no cost
     },
     {
         "type": "aws_glue_job",
@@ -686,7 +711,8 @@ export const AWS_Resources = [
             "timeout": { "type": "number", "required": false, "options": [] },
             "max_retries": { "type": "number", "required": false, "options": [] },
             "tags": { "type": "map", "required": false, "options": [] }
-        }
+        },
+        "cost": 0.44 // Glue cost per DPU hour (G.2X worker type)
     },
     {
         "type": "aws_redshift_cluster",
@@ -714,7 +740,8 @@ export const AWS_Resources = [
             "enhanced_vpc_routing": { "type": "bool", "required": false, "options": [] },
             "publicly_accessible": { "type": "bool", "required": false, "options": [] },
             "tags": { "type": "map", "required": false, "options": [] }
-        }
+        },
+        "cost": 38.688 // ra3.16xlarge hourly rate * 730 hours
     },
     {
         "type": "aws_efs_file_system",
@@ -741,7 +768,8 @@ export const AWS_Resources = [
                 }
             },
             "tags": { "type": "map", "required": false, "options": [] }
-        }
+        },
+        "cost": 0.30 // EFS cost per GB-month (provisioned throughput)
     },
     {
         "type": "aws_elasticsearch_domain",
@@ -806,7 +834,8 @@ export const AWS_Resources = [
             },
             "advanced_options": { "type": "map", "required": false, "options": [] },
             "tags": { "type": "map", "required": false, "options": [] }
-        }
+        },
+        "cost": 6.80 // i3.16xlarge hourly rate * 730 hours
     },
     {
         "type": "aws_msk_cluster",
@@ -839,7 +868,8 @@ export const AWS_Resources = [
                 }
             },
             "tags": { "type": "map", "required": false, "options": [] }
-        }
+        },
+        "cost": 5.76 // kafka.m5.24xlarge hourly rate * 730 hours
     },
     {
         "type": "aws_wafv2_web_acl",
@@ -895,7 +925,8 @@ export const AWS_Resources = [
                 }
             },
             "tags": { "type": "map", "required": false, "options": [] }
-        }
+        },
+        "cost": 5.00 // WAFv2 cost per web ACL per month
     },
     {
         "type": "aws_appsync_graphql_api",
@@ -941,7 +972,8 @@ export const AWS_Resources = [
                 }
             },
             "tags": { "type": "map", "required": false, "options": [] }
-        }
+        },
+        "cost": 4.00 // AppSync cost per million queries (with data sources)
     },
     {
         "type": "aws_fsx_lustre_file_system",
@@ -963,7 +995,8 @@ export const AWS_Resources = [
             },
             "kms_key_id": { "type": "string", "required": false, "options": [] },
             "tags": { "type": "map", "required": false, "options": [] }
-        }
+        },
+        "cost": 0.14 // FSx for Lustre cost per GB-month (SSD)
     },
     {
         "type": "aws_iot_topic_rule",
@@ -975,7 +1008,8 @@ export const AWS_Resources = [
             "sql_version": { "type": "string", "required": true, "options": [] },
             "error_action": { "type": "map", "required": false, "options": [] },
             "tags": { "type": "map", "required": false, "options": [] }
-        }
+        },
+        "cost": 0.15 // IoT Rules cost per million messages
     },
     {
         "type": "aws_neptune_cluster",
@@ -997,7 +1031,8 @@ export const AWS_Resources = [
             "kms_key_arn": { "type": "string", "required": false, "options": [] },
             "iam_roles": { "type": "list", "required": false, "options": [] },
             "tags": { "type": "map", "required": false, "options": [] }
-        }
+        },
+        "cost": 4.60 // Neptune cost per instance hour (db.r5.24xlarge)
     },
     {
         "type": "aws_qldb_ledger",
@@ -1010,7 +1045,8 @@ export const AWS_Resources = [
             },
             "deletion_protection": { "type": "bool", "required": false, "options": [] },
             "tags": { "type": "map", "required": false, "options": [] }
-        }
+        },
+        "cost": 0.276 // QLDB cost per GB-month
     },
     {
         "type": "aws_service_discovery_service",
@@ -1049,7 +1085,8 @@ export const AWS_Resources = [
                 }
             },
             "tags": { "type": "map", "required": false, "options": [] }
-        }
+        },
+        "cost": 0.10 // Service Discovery cost per namespace per hour
     },
     {
         "type": "aws_transfer_server",
@@ -1072,7 +1109,8 @@ export const AWS_Resources = [
             },
             "logging_role": { "type": "string", "required": false, "options": [] },
             "tags": { "type": "map", "required": false, "options": [] }
-        }
+        },
+        "cost": 0.30 // Transfer Family cost per hour
     },
     {
         "type": "aws_workspaces_directory",
@@ -1080,6 +1118,7 @@ export const AWS_Resources = [
             "directory_id": { "type": "string", "required": true, "options": [] },
             "subnet_ids": { "type": "list", "required": false, "options": [] },
             "tags": { "type": "map", "required": false, "options": [] }
-        }
+        },
+        "cost": 0.00 // WorkSpaces directory itself has no cost
     }
 ];
