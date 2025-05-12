@@ -1,18 +1,18 @@
 
 import React from 'react';
+import { ResourceItem } from '@/types/resource';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { ResourceItem } from '@/types/resource';
+import { Textarea } from '@/components/ui/textarea';
 import PropertyRenderer from './PropertyRenderer';
-import { Download } from 'lucide-react';
+import { copyToClipboard } from '@/lib/utils';
+import { useToast } from '@/hooks/use-toast';
 
 interface AdvancedPropertiesTabProps {
   resource: ResourceItem;
   onPropertyChange: (key: string, value: any) => void;
   onTerraformTypeChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onExportJson: () => void;
-  resourceType?: string;
-  provider?: 'aws' | 'azure';
 }
 
 const AdvancedPropertiesTab: React.FC<AdvancedPropertiesTabProps> = ({
@@ -20,8 +20,6 @@ const AdvancedPropertiesTab: React.FC<AdvancedPropertiesTabProps> = ({
   onPropertyChange,
   onTerraformTypeChange,
   onExportJson,
-  resourceType,
-  provider
 }) => {
   const { toast } = useToast();
   
@@ -65,51 +63,58 @@ const AdvancedPropertiesTab: React.FC<AdvancedPropertiesTabProps> = ({
   };
 
   return (
-    <div className="space-y-4">
-      <div>
-        <label htmlFor="terraformType" className="block text-sm font-medium mb-1">
-          Terraform Resource Type
-        </label>
+    <>
+      <div className="space-y-2">
+        <label htmlFor="terraformType" className="text-sm font-medium">Terraform Resource Type</label>
         <Input
           id="terraformType"
-          placeholder="e.g. aws_instance"
           value={resource.terraformType || ''}
           onChange={onTerraformTypeChange}
           className="w-full"
+          placeholder="e.g., aws_instance, azurerm_virtual_machine"
         />
-        <p className="text-xs text-muted-foreground mt-1">
-          This is the Terraform resource type that will be used to create this resource.
-        </p>
+        <p className="text-xs text-muted-foreground">The Terraform resource type (e.g., aws_instance)</p>
       </div>
       
-      {resource.properties && Object.keys(resource.properties).length > 0 && (
-        <>
-          <h4 className="font-medium mt-4">Advanced Properties</h4>
-          <div className="border rounded-md p-3 bg-background">
+      <div className="space-y-4 mt-4">
+        <h4 className="text-sm font-medium">Properties</h4>
+        <div className="space-y-3">
+          {resource.properties && (
             <PropertyRenderer 
               obj={resource.properties} 
-              onPropertyChange={onPropertyChange}
-              resourceType={resourceType}
-              provider={provider}
+              onPropertyChange={onPropertyChange} 
             />
-          </div>
-        </>
-      )}
-      
-      <div className="mt-4">
-        <Button 
-          variant="outline" 
-          onClick={onExportJson}
-          className="flex items-center"
-        >
-          <Download className="h-4 w-4 mr-2" />
-          Export as JSON
-        </Button>
-        <p className="text-xs text-muted-foreground mt-1">
-          Download the resource configuration as a JSON file.
-        </p>
+          )}
+        </div>
       </div>
-    </div>
+      
+      <div className="space-y-2 mt-4">
+        <div className="flex items-center justify-between">
+          <h4 className="text-sm font-medium">Resource JSON</h4>
+          <Button 
+            variant="outline"
+            size="sm"
+            onClick={handleCopyJson}
+          >
+            Copy JSON
+          </Button>
+        </div>
+        
+        <Textarea
+          value={JSON.stringify(resourceJson, null, 2)}
+          readOnly
+          className="font-mono text-xs h-[200px]"
+        />
+        
+        <Button 
+          variant="outline"
+          className="w-full"
+          onClick={onExportJson}
+        >
+          Export Full Architecture as JSON
+        </Button>
+      </div>
+    </>
   );
 };
 

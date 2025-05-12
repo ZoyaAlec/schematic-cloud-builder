@@ -28,8 +28,6 @@ interface PropertyMetadata {
 interface PropertyRendererProps {
   obj: any;
   prefix?: string;
-  resourceType?: string;
-  provider?: 'aws' | 'azure';
   onPropertyChange: (key: string, value: any) => void;
   metadata?: PropertyMetadata;
 }
@@ -40,20 +38,6 @@ const PropertyRenderer: React.FC<PropertyRendererProps> = ({
   onPropertyChange,
   metadata = {}
 }) => {
-  // Get resource properties definition from config
-  const getPropertyDefinition = (key: string) => {
-    if (!resourceType || !provider) return null;
-    
-    const resource = Cloud_Resources.find(r => 
-      r.type === resourceType && r.provider === provider
-    );
-    
-    if (resource && resource.properties) {
-      return resource.properties.find(p => p.name === key);
-    }
-    return null;
-  };
-
   return Object.entries(obj).map(([key, value]) => {
     // Skip rendering metadata properties that aren't meant for display
     if (key === 'type' || key === 'required') {
@@ -103,7 +87,7 @@ const PropertyRenderer: React.FC<PropertyRendererProps> = ({
                   onChange={(e) => {
                     const newArr = [...value];
                     newArr[index] = e.target.value;
-                    onPropertyChange(fullKey, newArr);
+                    onPropertyChange(key, newArr);
                   }}
                   className="mt-1 text-xs"
                 />
@@ -115,7 +99,7 @@ const PropertyRenderer: React.FC<PropertyRendererProps> = ({
             size="sm" 
             onClick={() => {
               const newArr = [...value, ''];
-              onPropertyChange(fullKey, newArr);
+              onPropertyChange(key, newArr);
             }}
             className="mt-1 text-xs"
           >

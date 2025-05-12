@@ -1,23 +1,5 @@
-
-import React, { useState, useCallback, useRef, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
-import { useDrag, useDrop } from 'react-dnd';
-import { DndProvider } from 'react-dnd';
-import { HTML5Backend } from 'react-dnd-html5-backend';
-import { ItemTypes } from '@/types/itemTypes';
-import { AWS_Resources } from '@/Config/Resources/AWS_Resources';
-import { Azure_Resources } from '@/Config/Resources/Azure_Resources';
-import { ResourceItem } from '@/types/resource';
-import { Cloud_Resources } from '@/Config/Resources/Cloud_Resources';
-import ResourcePropertiesPanel from '@/components/ResourcePropertiesPanel';
-import { useToast } from "@/hooks/use-toast";
-import { Trash2 } from 'lucide-react';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+import React, { useState, useRef, useCallback } from 'react';
+import { Database, Server, Cloud, Trash, Info, Network, Shield, Link } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ResourceItem, ArchitectureDesign, Connection, ResourceExport } from '@/types/resource';
 import { useToast } from '@/hooks/use-toast';
@@ -26,51 +8,31 @@ import { ResizablePanelGroup, ResizablePanel } from '@/components/ui/resizable';
 import { AWS_Resources } from '../Config/Resources/AWS_Resources';
 import { Azure_Resources } from '../Config/Resources/Azure_Resources';
 
-interface DragItem {
-  id: string;
-  type: string;
-  name: string;
-  icon: any;
-  description: string;
-  provider: 'aws' | 'azure';
-  cost: number;
-  costDetails?: string;
-}
-
-interface DropCollectedProps {
-  isOver: boolean;
-}
-
 interface DragDropDesignerProps {
   provider: 'aws' | 'azure';
-  isAiGenerated: boolean;
+  isAiGenerated?: boolean;
   placedResources: ResourceItem[];
-  setPlacedResources: (resources: ResourceItem[]) => void;
+  setPlacedResources: React.Dispatch<React.SetStateAction<ResourceItem[]>>;
   onProviderChange: (provider: 'aws' | 'azure') => void;
 }
 
-const DragDropDesignerContent: React.FC<DragDropDesignerProps> = ({ 
-  provider, 
-  isAiGenerated,
+const DragDropDesigner: React.FC<DragDropDesignerProps> = ({ 
+  provider: initialProvider, 
+  isAiGenerated = false,
   placedResources,
   setPlacedResources,
   onProviderChange
 }) => {
-  const location = useLocation();
-  const { toast } = useToast();
-  const [resources, setResources] = useState<ResourceItem[]>(provider === 'aws' ? AWS_Resources : Azure_Resources);
-  const [resourcePanelOpen, setResourcePanelOpen] = useState(false);
+  const [draggedItem, setDraggedItem] = useState<ResourceItem | null>(null);
   const [selectedResource, setSelectedResource] = useState<ResourceItem | null>(null);
-  const [isDraggingFromSidebar, setIsDraggingFromSidebar] = useState(false);
-  const [isTrashHovering, setIsTrashHovering] = useState(false);
-  const [zoomLevel, setZoomLevel] = useState(1);
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  // Log resources to debug
-  useEffect(() => {
-    console.log("Current provider:", provider);
-    console.log("Available resources:", provider === 'aws' ? AWS_Resources : Azure_Resources);
-  }, [provider]);
+  const [propertiesOpen, setPropertiesOpen] = useState(false);
+  const [draggingResource, setDraggingResource] = useState<string | null>(null);
+  const [draggingPosition, setDraggingPosition] = useState({ x: 0, y: 0 });
+  const [isCreatingConnection, setIsCreatingConnection] = useState(false);
+  const [connectionStart, setConnectionStart] = useState<string | null>(null);
+  
+  const canvasRef = useRef<HTMLDivElement>(null);
+  const { toast } = useToast();
 
   // Use type assertion to ensure TypeScript recognizes these as ResourceItem arrays
   const awsResourceItems = AWS_Resources as unknown as ResourceItem[];
@@ -146,110 +108,128 @@ const DragDropDesignerContent: React.FC<DragDropDesignerProps> = ({
     }
   };
 
-  const addResource = (item: DragItem) => {
-    const newResource: ResourceItem = {
-      ...item,
-      id: `${item.type}-${Date.now()}`,
-      x: 100,
-      y: 100,
-      count: 1,
-      properties: {}
-    };
-    setPlacedResources([...placedResources, newResource]);
+  const handleProviderChange = (provider: 'aws' | 'azure') => {
+    onProviderChange(provider);
+    setSelectedResource(null);
+    setPropertiesOpen(false);
   };
 
-  const updateResourcePosition = (id: string, clientOffset: { x: number, y: number }) => {
-    const newResources = placedResources.map(resource =>
-      resource.id === id ? { ...resource, x: clientOffset.x, y: clientOffset.y } : resource
-    );
-    setPlacedResources(newResources);
-  };
-
-  const removeResource = (id: string) => {
-    const newResources = placedResources.filter(resource => resource.id !== id);
-    setPlacedResources(newResources);
-    toast({
-      title: "Resource Removed",
-      description: "The resource has been removed from the design.",
-    });
-  };
-
-  const onDragStart = () => {
-    setIsDraggingFromSidebar(true);
-  };
-
-  const onDragEnd = (event: any) => {
-    const { active, over } = event;
-
-    if (over && over.id === 'trash') {
-      removeResource(active.id);
+  const handleResourceClick = (resource: ResourceItem, e: React.MouseEvent) => {
+    e.stopPropagation();
+    
+    if (isCreatingConnection) {
+      if (connectionStart && connectionStart !== resource.id) {
+        // Create a new connection between resources
+        const newConnection: Connection = {
+          sourceId: connectionStart,
+          targetId: resource.id,
+          type: 'depends_on'
+        };
+        
+        // Add connection to source resource
+        const sourceResource = placedResources.find(r => r.id === connectionStart);
+        if (sourceResource) {
+          const updatedResource = { 
+            ...sourceResource, 
+            connections: [...(sourceResource.connections || []), newConnection] 
+          };
+          
+          const updatedResources = placedResources.map(item => 
+            item.id === connectionStart ? updatedResource : item
+          );
+          
+          setPlacedResources(updatedResources);
+          setSelectedResource(updatedResource);
+          
+          toast({
+            title: "Connection Created",
+            description: `Connected ${sourceResource.name} to ${resource.name}`,
+          });
+        }
+        
+        setIsCreatingConnection(false);
+        setConnectionStart(null);
+      } else {
+        setConnectionStart(resource.id);
+      }
+    } else {
+      setSelectedResource(resource);
+      setPropertiesOpen(true);
     }
   };
 
-  const Resource = ({ resource }: { resource: ResourceItem }) => {
-    const [{ isDragging }, drag] = useDrag<ResourceItem, unknown, { isDragging: boolean }>({
-      type: ItemTypes.RESOURCE,
-      item: resource,
-      end: (item, monitor) => {
-        if (!monitor.didDrop()) {
-          updateResourcePosition(item.id, monitor.getClientOffset() || { x: 0, y: 0 });
-        }
-        onDragEnd({ active: item, over: monitor.getDropResult() });
-      },
-      collect: (monitor) => ({
-        isDragging: monitor.isDragging(),
-      }),
+  const handleStartConnection = (resourceId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsCreatingConnection(true);
+    setConnectionStart(resourceId);
+    
+    toast({
+      title: "Creating Connection",
+      description: "Click on another resource to create a connection",
     });
-
-    const handleResourceClick = (resourceId: string) => {
-      const clickedResource = placedResources.find(r => r.id === resourceId);
-      if (clickedResource) {
-        setSelectedResource(clickedResource);
-        setResourcePanelOpen(true);
-      }
-    };
-
-    return (
-      <div
-        ref={drag}
-        style={{
-          position: 'absolute',
-          left: resource.x,
-          top: resource.y,
-          opacity: isDragging ? 0.5 : 1,
-          cursor: 'move',
-          zIndex: isDragging ? 1000 : 'auto',
-        }}
-        className="resource-item"
-        onClick={() => handleResourceClick(resource.id)}
-      >
-        <div className="flex flex-col items-center justify-center p-2 rounded-md shadow-md bg-white dark:bg-gray-800">
-          {resource.icon ? <resource.icon size={24} /> : <div>{resource.type}</div>}
-          <div className="text-xs font-semibold mt-1">{resource.name}</div>
-        </div>
-      </div>
-    );
   };
 
-  const Trash = () => {
-    const [{ isOver }, drop] = useDrop(() => ({
-      accept: ItemTypes.RESOURCE,
-      drop: () => ({ name: 'Trash' }),
-      collect: (monitor) => ({
-        isOver: monitor.isOver(),
-        canDrop: monitor.canDrop(),
-      }),
-      hover: (item, monitor) => {
-        setIsTrashHovering(monitor.isOver({ shallow: true }));
-      },
-    }));
+  const handleMouseDown = (resourceId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!isCreatingConnection) {
+      setDraggingResource(resourceId);
+      setDraggingPosition({ x: e.clientX, y: e.clientY });
+    }
+  };
 
-    return (
-      <div ref={drop} className="absolute bottom-4 right-4">
-        <div className={`p-3 rounded-full ${isTrashHovering ? 'bg-red-500 text-white' : 'bg-gray-200 dark:bg-gray-700'}`}>
-          <Trash2 size={20} />
-        </div>
-      </div>
+  const handleMouseMove = useCallback((e: React.MouseEvent) => {
+    if (draggingResource) {
+      const dx = e.clientX - draggingPosition.x;
+      const dy = e.clientY - draggingPosition.y;
+      
+      setPlacedResources(resources => resources.map(resource => {
+        if (resource.id === draggingResource) {
+          return {
+            ...resource,
+            x: (resource.x || 0) + dx,
+            y: (resource.y || 0) + dy
+          };
+        }
+        return resource;
+      }));
+      
+      setDraggingPosition({ x: e.clientX, y: e.clientY });
+    }
+  }, [draggingResource, draggingPosition]);
+
+  const handleMouseUp = () => {
+    setDraggingResource(null);
+  };
+
+  const handleCancelConnection = (e: React.MouseEvent) => {
+    if (isCreatingConnection) {
+      e.stopPropagation();
+      setIsCreatingConnection(false);
+      setConnectionStart(null);
+      
+      toast({
+        title: "Connection Canceled",
+        description: "Connection creation canceled",
+      });
+    }
+  };
+
+  const handleCloseProperties = () => {
+    setPropertiesOpen(false);
+    setSelectedResource(null);
+  };
+
+  const handleUpdateResource = (updatedResource: ResourceItem) => {
+    const updatedResources = placedResources.map(item => 
+      item.id === updatedResource.id ? updatedResource : item
+    );
+    setPlacedResources(updatedResources);
+  };
+
+  const handleDeleteResource = (resourceId: string) => {
+    // First check if this resource is referenced by others
+    const referencingResources = placedResources.filter(resource => 
+      resource.connections?.some(conn => conn.targetId === resourceId)
     );
     
     if (referencingResources.length > 0) {
@@ -343,15 +323,79 @@ const DragDropDesignerContent: React.FC<DragDropDesignerProps> = ({
       description: "Your architecture has been exported as JSON.",
     });
   };
-
-  const handleZoomOut = () => {
-    setZoomLevel(prevZoom => Math.max(prevZoom - 0.1, 0.5));
+  
+  const getProviderColorClass = (providerType: 'aws' | 'azure') => {
+    return providerType === 'aws' ? 'bg-aws text-black' : 'bg-azure text-white';
   };
 
-  const handleZoomReset = () => {
-    setZoomLevel(1);
+  // Calculate connection lines between resources
+  const renderConnections = () => {
+    const connectionElements: JSX.Element[] = [];
+    
+    placedResources.forEach(resource => {
+      const connections = resource.connections || [];
+      
+      connections.forEach((connection, index) => {
+        const sourceResource = resource;
+        const targetResource = placedResources.find(r => r.id === connection.targetId);
+        
+        if (sourceResource && targetResource) {
+          const sourceX = (sourceResource.x || 0) + 20;
+          const sourceY = (sourceResource.y || 0) + 20;
+          const targetX = (targetResource.x || 0) + 20;
+          const targetY = (targetResource.y || 0) + 20;
+          
+          // Calculate the angle for the arrow marker
+          const angle = Math.atan2(targetY - sourceY, targetX - sourceX) * 180 / Math.PI;
+          
+          connectionElements.push(
+            <g key={`${sourceResource.id}-${targetResource.id}-${index}`}>
+              <line
+                x1={sourceX}
+                y1={sourceY}
+                x2={targetX}
+                y2={targetY}
+                stroke={connection.type === 'depends_on' ? '#6366f1' : '#22c55e'}
+                strokeWidth={2}
+                strokeDasharray={connection.type === 'reference' ? '5,5' : 'none'}
+                markerEnd="url(#arrowhead)"
+              />
+              {/* Connection type label */}
+              <text
+                x={(sourceX + targetX) / 2}
+                y={(sourceY + targetY) / 2 - 5}
+                textAnchor="middle"
+                fontSize="10"
+                fill="currentColor"
+                className="bg-white dark:bg-navy-light px-1 rounded"
+              >
+                {connection.type}
+              </text>
+            </g>
+          );
+        }
+      });
+    });
+    
+    return (
+      <svg className="absolute top-0 left-0 w-full h-full pointer-events-none">
+        <defs>
+          <marker
+            id="arrowhead"
+            markerWidth="10"
+            markerHeight="7"
+            refX="9"
+            refY="3.5"
+            orient="auto"
+          >
+            <polygon points="0 0, 10 3.5, 0 7" fill="currentColor" />
+          </marker>
+        </defs>
+        {connectionElements}
+      </svg>
+    );
   };
-
+  
   return (
     <div className="h-full flex flex-col">
       {/* Provider Selection */}
@@ -551,61 +595,14 @@ const DragDropDesignerContent: React.FC<DragDropDesignerProps> = ({
       </ResizablePanelGroup>
 
       {/* Resource Properties Panel */}
-      {selectedResource && (
-        <ResourcePropertiesPanel
-          resource={selectedResource}
-          onClose={() => {
-            setResourcePanelOpen(false);
-            setSelectedResource(null);
-          }}
-          onUpdate={(updatedResource) => {
-            const updatedResources = placedResources.map(resource =>
-              resource.id === updatedResource.id ? updatedResource : resource
-            );
-            setPlacedResources(updatedResources);
-          }}
-          allResources={placedResources}
-          open={resourcePanelOpen}
-        />
-      )}
+      <ResourcePropertiesPanel 
+        resource={selectedResource} 
+        onClose={handleCloseProperties}
+        onUpdate={handleUpdateResource}
+        allResources={placedResources}
+        open={propertiesOpen}
+      />
     </div>
-  );
-};
-
-interface DragItemComponentProps {
-  resource: DragItem;
-}
-
-const DragItemComponent: React.FC<DragItemComponentProps> = ({ resource }) => {
-  const [{ isDragging }, drag] = useDrag<DragItem, unknown, { isDragging: boolean }>({
-    type: ItemTypes.RESOURCE,
-    item: resource,
-    collect: (monitor) => ({
-      isDragging: monitor.isDragging(),
-    }),
-  });
-
-  return (
-    <div
-      ref={drag}
-      style={{
-        opacity: isDragging ? 0.5 : 1,
-        cursor: 'grab',
-      }}
-      className="flex items-center space-x-2"
-    >
-      {resource.icon && <resource.icon size={20} />}
-      <span>{resource.name}</span>
-    </div>
-  );
-};
-
-// Wrap with DndProvider
-const DragDropDesigner: React.FC<DragDropDesignerProps> = (props) => {
-  return (
-    <DndProvider backend={HTML5Backend}>
-      <DragDropDesignerContent {...props} />
-    </DndProvider>
   );
 };
 
