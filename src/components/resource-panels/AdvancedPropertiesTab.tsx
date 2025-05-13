@@ -7,7 +7,6 @@ import { Textarea } from '@/components/ui/textarea';
 import PropertyRenderer from './PropertyRenderer';
 import { copyToClipboard } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
-import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface AdvancedPropertiesTabProps {
   resource: ResourceItem;
@@ -121,16 +120,14 @@ const AdvancedPropertiesTab: React.FC<AdvancedPropertiesTabProps> = ({
       
       <div className="space-y-4 mt-4">
         <h4 className="text-sm font-medium">Properties</h4>
-        <ScrollArea className="h-[300px] pr-4">
-          <div className="space-y-3">
-            {resource.properties && (
-              <PropertyRenderer 
-                obj={resource.properties} 
-                onPropertyChange={onPropertyChange} 
-              />
-            )}
-          </div>
-        </ScrollArea>
+              <div className="space-y-3">
+                  {resource.properties && (
+                      <PropertyRenderer
+                          obj={resource.properties}
+                          onPropertyChange={onPropertyChange}
+                      />
+                  )}
+              </div>
       </div>
       
       <div className="space-y-2 mt-4">

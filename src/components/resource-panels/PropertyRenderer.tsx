@@ -53,7 +53,7 @@ const PropertyRenderer: React.FC<PropertyRendererProps> = ({
       if (Object.prototype.hasOwnProperty.call(propValue, 'options') && 
           Array.isArray((propValue as ResourceProperty).options)) {
         propertyOptions = (propValue as ResourceProperty).options;
-      }
+        }
       
       // Check if this is a metadata object or a nested object
       if ((Object.prototype.hasOwnProperty.call(propValue, 'type') || 
@@ -100,7 +100,9 @@ const PropertyRenderer: React.FC<PropertyRendererProps> = ({
         
         const selectedValue = actualValue !== undefined ? actualValue : 
                           (propertyOptions && propertyOptions.length > 0 ? propertyOptions[0] : '');
-        
+
+        console.log(fullKey, propertyType, propValue);
+
         // Render the appropriate input control
         return (
           <div key={fullKey} className="flex flex-col space-y-1 mt-3">
@@ -109,7 +111,7 @@ const PropertyRenderer: React.FC<PropertyRendererProps> = ({
               {isRequired && <Asterisk className="h-3 w-3 inline ml-1 text-red-500" />}
             </label>
             
-            {propertyType === 'list' && propertyOptions && propertyOptions.length > 0 ? (
+            {propertyType === 'string' && propertyOptions && propertyOptions.length > 0 ? (
               <Select
                 value={String(selectedValue)}
                 onValueChange={(newValue) => {
