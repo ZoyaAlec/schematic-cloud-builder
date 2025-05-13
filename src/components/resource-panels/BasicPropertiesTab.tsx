@@ -1,6 +1,6 @@
 
 import React, { useEffect } from 'react';
-import { ResourceItem } from '@/types/resource';
+import { ResourceItem, ResourceProperty } from '@/types/resource';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 
@@ -23,18 +23,24 @@ const BasicPropertiesTab: React.FC<BasicPropertiesTabProps> = ({
   useEffect(() => {
     if (resource.properties) {
       // For each property that has metadata with options
-      Object.entries(resource.properties).forEach(([key, value]) => {
+      Object.entries(resource.properties).forEach(([key, propValue]) => {
         if (
-          typeof value === 'object' && 
-          value !== null && 
-          !Array.isArray(value) && 
-          'options' in value && 
-          Array.isArray(value.options) && 
-          value.options.length > 0 &&
-          !value.value // Only set if value is not already set
+          typeof propValue === 'object' && 
+          propValue !== null && 
+          !Array.isArray(propValue) && 
+          'options' in propValue && 
+          Array.isArray((propValue as ResourceProperty).options) && 
+          (propValue as ResourceProperty).options.length > 0 &&
+          !(propValue as any).value // Only set if value is not already set
         ) {
+          // Create a new property object with the first option as the value
+          const updatedPropValue = {
+            ...propValue,
+            value: (propValue as ResourceProperty).options[0]
+          };
+          
           // Set the property to the first option
-          onPropertyChange(key, value.options[0]);
+          onPropertyChange(key, updatedPropValue);
         }
       });
     }

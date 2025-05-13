@@ -8,9 +8,10 @@ export interface Connection {
 }
 
 export interface ResourceProperty {
-    type: string;
-    required: boolean;
-    options: string[];
+  type: string;
+  required: boolean;
+  options: string[];
+  value?: any; // Adding value property to store the actual value
 }
 
 export interface ResourceItem {
@@ -27,8 +28,8 @@ export interface ResourceItem {
   y?: number;
   count?: number;
   connections?: Connection[];
-    properties?: {
-        [key: string]: ResourceProperty;
+  properties?: {
+    [key: string]: ResourceProperty | {[key: string]: any};
   };
 }
 

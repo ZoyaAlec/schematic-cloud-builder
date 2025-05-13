@@ -1,6 +1,5 @@
-
 import React from 'react';
-import { ResourceItem } from '@/types/resource';
+import { ResourceItem, ResourceProperty } from '@/types/resource';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -30,35 +29,35 @@ const AdvancedPropertiesTab: React.FC<AdvancedPropertiesTabProps> = ({
     const cleaned: {[key: string]: any} = {};
     
     Object.entries(props).forEach(([key, value]) => {
-      // Skip metadata properties
-      if (key === 'type' || key === 'required' || key === 'options') {
-        return;
-      }
-      
-      // If value is an object with metadata properties, extract just the actual value
-      if (value !== null && typeof value === 'object' && !Array.isArray(value)) {
-        if (Object.prototype.hasOwnProperty.call(value, 'type') && 
-            Object.prototype.hasOwnProperty.call(value, 'required') && 
-            Object.prototype.hasOwnProperty.call(value, 'options')) {
-          // This is a ResourceProperty object
-          if (Object.prototype.hasOwnProperty.call(value, 'value')) {
-            cleaned[key] = (value as any).value;
-          } else if (Object.prototype.hasOwnProperty.call(value, 'options') && 
-                    Array.isArray((value as any).options) && 
-                    (value as any).options.length > 0) {
-            cleaned[key] = (value as any).options[0];
-          } else {
-            cleaned[key] = null;
-          }
-        } else if (Object.prototype.hasOwnProperty.call(value, 'value')) {
-          // For objects with a value property, take that value
+      // If value is a ResourceProperty object
+      if (
+        value !== null && 
+        typeof value === 'object' && 
+        !Array.isArray(value) && 
+        'type' in value && 
+        'required' in value && 
+        'options' in value
+      ) {
+        // Extract just the value property if it exists
+        if ('value' in value) {
           cleaned[key] = (value as any).value;
-        } else {
-          // For nested objects, recursively clean
-          cleaned[key] = cleanPropertiesForExport(value);
+        } 
+        // Use first option if no value is set but options exist
+        else if ((value as ResourceProperty).options.length > 0) {
+          cleaned[key] = (value as ResourceProperty).options[0];
         }
-      } else {
-        // Simple values just pass through
+        // Otherwise use null
+        else {
+          cleaned[key] = null;
+        }
+      }
+      // For nested objects that are not ResourceProperty objects
+      else if (value !== null && typeof value === 'object' && !Array.isArray(value)) {
+        // Recursively clean nested objects
+        cleaned[key] = cleanPropertiesForExport(value);
+      }
+      // For arrays and primitive values
+      else {
         cleaned[key] = value;
       }
     });

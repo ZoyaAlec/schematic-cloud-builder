@@ -6,7 +6,7 @@ import BudgetView from '@/components/BudgetView';
 import ComplianceView from '@/components/ComplianceView';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { ResourceItem, ArchitectureDesign, ResourceExport } from '@/types/resource';
+import { ResourceItem, ArchitectureDesign, ResourceExport, ResourceProperty } from '@/types/resource';
 import { 
   supabase, 
   getCurrentUser, 
@@ -27,6 +27,19 @@ import { Label } from '@/components/ui/label';
 import { Server, Database, Network, Shield, LogIn, LogOut, User, Save } from 'lucide-react';
 
 type Tab = 'design' | 'budget' | 'compliance';
+
+// Helper function to create ResourceProperty objects
+const createProperty = (
+  type: string, 
+  required: boolean = false, 
+  options: string[] = [], 
+  defaultValue?: any
+): ResourceProperty => ({
+  type,
+  required,
+  options,
+  ...(defaultValue !== undefined ? { value: defaultValue } : {})
+});
 
 const SoftwareDesign = () => {
   const location = useLocation();
@@ -127,8 +140,10 @@ const SoftwareDesign = () => {
       // Create the properties object to save
       const properties = {
         provider: activeProvider,
-        region: placedResources.length > 0 && placedResources[0].properties?.region 
-          ? placedResources[0].properties.region 
+        region: placedResources.length > 0 && placedResources[0].properties?.region && 
+                typeof placedResources[0].properties.region === 'object' && 
+                'value' in placedResources[0].properties.region
+          ? placedResources[0].properties.region.value 
           : activeProvider === 'aws' ? 'us-east-1' : 'eastus',
         resources: processedResources
       };
@@ -206,8 +221,10 @@ const SoftwareDesign = () => {
           y: 100,
           terraformType: 'aws_vpc',
           properties: {
-            cidr_block: '10.0.0.0/16',
-            tags: { Name: 'Main VPC' }
+            cidr_block: createProperty('string', true, [], '10.0.0.0/16'),
+            tags: { 
+              Name: createProperty('string', false, [], 'Main VPC')
+            }
           }
         },
         {
@@ -223,29 +240,29 @@ const SoftwareDesign = () => {
           y: 200,
           terraformType: 'aws_security_group',
           properties: {
-            name: 'web-sg',
-            description: 'Allow HTTP/HTTPS traffic',
-            vpc_id: '${aws_vpc.main_vpc.id}',
+            name: createProperty('string', true, [], 'web-sg'),
+            description: createProperty('string', false, [], 'Allow HTTP/HTTPS traffic'),
+            vpc_id: createProperty('string', true, [], '${aws_vpc.main_vpc.id}'),
             ingress: [
               {
-                from_port: 80,
-                to_port: 80,
-                protocol: 'tcp',
-                cidr_blocks: ['0.0.0.0/0']
+                from_port: createProperty('number', true, [], 80),
+                to_port: createProperty('number', true, [], 80),
+                protocol: createProperty('string', true, [], 'tcp'),
+                cidr_blocks: createProperty('list', true, ['0.0.0.0/0'], ['0.0.0.0/0'])
               },
               {
-                from_port: 443,
-                to_port: 443,
-                protocol: 'tcp',
-                cidr_blocks: ['0.0.0.0/0']
+                from_port: createProperty('number', true, [], 443),
+                to_port: createProperty('number', true, [], 443),
+                protocol: createProperty('string', true, [], 'tcp'),
+                cidr_blocks: createProperty('list', true, ['0.0.0.0/0'], ['0.0.0.0/0'])
               }
             ],
             egress: [
               {
-                from_port: 0,
-                to_port: 0,
-                protocol: '-1',
-                cidr_blocks: ['0.0.0.0/0']
+                from_port: createProperty('number', true, [], 0),
+                to_port: createProperty('number', true, [], 0),
+                protocol: createProperty('string', true, [], '-1'),
+                cidr_blocks: createProperty('list', true, ['0.0.0.0/0'], ['0.0.0.0/0'])
               }
             ]
           },
@@ -271,12 +288,14 @@ const SoftwareDesign = () => {
           count: 2,
           terraformType: 'aws_instance',
           properties: {
-            ami: 'ami-0c55b159cbfafe1f0',
-            instance_type: 't2.micro',
-            key_name: 'my-key',
-            vpc_security_group_ids: ['${aws_security_group.web_sg.id}'],
-            subnet_id: '${aws_subnet.public_subnet.id}',
-            tags: { Name: 'WebServer' }
+            ami: createProperty('string', true, [], 'ami-0c55b159cbfafe1f0'),
+            instance_type: createProperty('string', true, ['t2.micro', 't2.small', 't2.medium'], 't2.micro'),
+            key_name: createProperty('string', false, [], 'my-key'),
+            vpc_security_group_ids: createProperty('list', true, [], ['${aws_security_group.web_sg.id}']),
+            subnet_id: createProperty('string', true, [], '${aws_subnet.public_subnet.id}'),
+            tags: { 
+              Name: createProperty('string', false, [], 'WebServer')
+            }
           },
           connections: [
             {
@@ -299,11 +318,11 @@ const SoftwareDesign = () => {
           y: 150,
           terraformType: 'aws_lb',
           properties: {
-            name: 'web-lb',
-            internal: false,
-            load_balancer_type: 'application',
-            security_groups: ['${aws_security_group.web_sg.id}'],
-            subnets: ['${aws_subnet.public_subnet.id}', '${aws_subnet.public_subnet2.id}']
+            name: createProperty('string', true, [], 'web-lb'),
+            internal: createProperty('boolean', false, [], false),
+            load_balancer_type: createProperty('string', true, ['application', 'network'], 'application'),
+            security_groups: createProperty('list', true, [], ['${aws_security_group.web_sg.id}']),
+            subnets: createProperty('list', true, [], ['${aws_subnet.public_subnet.id}', '${aws_subnet.public_subnet2.id}'])
           },
           connections: [
             {
@@ -326,17 +345,17 @@ const SoftwareDesign = () => {
           y: 300,
           terraformType: 'aws_db_instance',
           properties: {
-            allocated_storage: 20,
-            engine: 'mysql',
-            engine_version: '5.7',
-            instance_class: 'db.t3.medium',
-            name: 'mydb',
-            username: 'admin',
-            password: 'changeme',
-            parameter_group_name: 'default.mysql5.7',
-            skip_final_snapshot: true,
-            vpc_security_group_ids: ['${aws_security_group.db_sg.id}'],
-            db_subnet_group_name: '${aws_db_subnet_group.default.id}'
+            allocated_storage: createProperty('number', true, [], 20),
+            engine: createProperty('string', true, ['mysql', 'postgres', 'oracle'], 'mysql'),
+            engine_version: createProperty('string', false, [], '5.7'),
+            instance_class: createProperty('string', true, ['db.t3.micro', 'db.t3.small', 'db.t3.medium'], 'db.t3.medium'),
+            name: createProperty('string', true, [], 'mydb'),
+            username: createProperty('string', true, [], 'admin'),
+            password: createProperty('string', true, [], 'changeme'),
+            parameter_group_name: createProperty('string', false, [], 'default.mysql5.7'),
+            skip_final_snapshot: createProperty('boolean', false, [], true),
+            vpc_security_group_ids: createProperty('list', true, [], ['${aws_security_group.db_sg.id}']),
+            db_subnet_group_name: createProperty('string', true, [], '${aws_db_subnet_group.default.id}')
           }
         },
       ];
@@ -355,10 +374,10 @@ const SoftwareDesign = () => {
           y: 100,
           terraformType: 'azurerm_virtual_network',
           properties: {
-            name: 'main-vnet',
-            address_space: ['10.0.0.0/16'],
-            location: 'East US',
-            resource_group_name: 'app-resources'
+            name: createProperty('string', true, [], 'main-vnet'),
+            address_space: createProperty('list', true, [], ['10.0.0.0/16']),
+            location: createProperty('string', true, ['East US', 'West US', 'Central US'], 'East US'),
+            resource_group_name: createProperty('string', true, [], 'app-resources')
           }
         },
         {
@@ -374,31 +393,31 @@ const SoftwareDesign = () => {
           y: 200,
           terraformType: 'azurerm_network_security_group',
           properties: {
-            name: 'web-nsg',
-            location: 'East US',
-            resource_group_name: 'app-resources',
+            name: createProperty('string', true, [], 'web-nsg'),
+            location: createProperty('string', true, ['East US', 'West US', 'Central US'], 'East US'),
+            resource_group_name: createProperty('string', true, [], 'app-resources'),
             security_rule: [
               {
-                name: 'allow-http',
-                priority: 100,
-                direction: 'Inbound',
-                access: 'Allow',
-                protocol: 'Tcp',
-                source_port_range: '*',
-                destination_port_range: '80',
-                source_address_prefix: '*',
-                destination_address_prefix: '*'
+                name: createProperty('string', true, [], 'allow-http'),
+                priority: createProperty('number', true, [], 100),
+                direction: createProperty('string', false, ['Inbound', 'Outbound'], 'Inbound'),
+                access: createProperty('string', false, ['Allow', 'Deny'], 'Allow'),
+                protocol: createProperty('string', false, ['Tcp', 'Udp', 'Icmp', '*'], 'Tcp'),
+                source_port_range: createProperty('string', false, [], '*'),
+                destination_port_range: createProperty('string', false, [], '80'),
+                source_address_prefix: createProperty('string', false, [], '*'),
+                destination_address_prefix: createProperty('string', false, [], '*')
               },
               {
-                name: 'allow-https',
-                priority: 110,
-                direction: 'Inbound',
-                access: 'Allow',
-                protocol: 'Tcp',
-                source_port_range: '*',
-                destination_port_range: '443',
-                source_address_prefix: '*',
-                destination_address_prefix: '*'
+                name: createProperty('string', true, [], 'allow-https'),
+                priority: createProperty('number', true, [], 110),
+                direction: createProperty('string', false, ['Inbound', 'Outbound'], 'Inbound'),
+                access: createProperty('string', false, ['Allow', 'Deny'], 'Allow'),
+                protocol: createProperty('string', false, ['Tcp', 'Udp', 'Icmp', '*'], 'Tcp'),
+                source_port_range: createProperty('string', false, [], '*'),
+                destination_port_range: createProperty('string', false, [], '443'),
+                source_address_prefix: createProperty('string', false, [], '*'),
+                destination_address_prefix: createProperty('string', false, [], '*')
               }
             ]
           }
@@ -417,20 +436,20 @@ const SoftwareDesign = () => {
           count: 2,
           terraformType: 'azurerm_virtual_machine',
           properties: {
-            name: 'app-vm',
-            location: 'East US',
-            resource_group_name: 'app-resources',
-            vm_size: 'Standard_D2s_v3',
-            network_interface_ids: ['${azurerm_network_interface.app_nic.id}'],
+            name: createProperty('string', true, [], 'app-vm'),
+            location: createProperty('string', true, ['East US', 'West US', 'Central US'], 'East US'),
+            resource_group_name: createProperty('string', true, [], 'app-resources'),
+            vm_size: createProperty('string', true, ['Standard_D2s_v3', 'Standard_D4s_v3'], 'Standard_D2s_v3'),
+            network_interface_ids: createProperty('list', true, [], ['${azurerm_network_interface.app_nic.id}']),
             storage_os_disk: {
-              name: 'app-osdisk',
-              caching: 'ReadWrite',
-              create_option: 'FromImage',
-              managed_disk_type: 'Premium_LRS'
+              name: createProperty('string', true, [], 'app-osdisk'),
+              caching: createProperty('string', false, ['ReadWrite', 'ReadOnly', 'None'], 'ReadWrite'),
+              create_option: createProperty('string', false, ['FromImage', 'Empty'], 'FromImage'),
+              managed_disk_type: createProperty('string', false, ['Standard_LRS', 'Premium_LRS'], 'Premium_LRS')
             },
             os_profile: {
-              computer_name: 'appvm',
-              admin_username: 'adminuser'
+              computer_name: createProperty('string', true, [], 'appvm'),
+              admin_username: createProperty('string', true, [], 'adminuser')
             }
           }
         },
@@ -447,12 +466,12 @@ const SoftwareDesign = () => {
           y: 150,
           terraformType: 'azurerm_lb',
           properties: {
-            name: 'app-lb',
-            location: 'East US',
-            resource_group_name: 'app-resources',
+            name: createProperty('string', true, [], 'app-lb'),
+            location: createProperty('string', true, ['East US', 'West US', 'Central US'], 'East US'),
+            resource_group_name: createProperty('string', true, [], 'app-resources'),
             frontend_ip_configuration: {
-              name: 'PublicIPAddress',
-              public_ip_address_id: '${azurerm_public_ip.lb_ip.id}'
+              name: createProperty('string', true, [], 'PublicIPAddress'),
+              public_ip_address_id: createProperty('string', true, [], '${azurerm_public_ip.lb_ip.id}')
             }
           }
         },
@@ -469,12 +488,12 @@ const SoftwareDesign = () => {
           y: 300,
           terraformType: 'azurerm_sql_server',
           properties: {
-            name: 'app-sqlserver',
-            location: 'East US',
-            resource_group_name: 'app-resources',
-            version: '12.0',
-            administrator_login: 'sqladmin',
-            administrator_login_password: 'changeme'
+            name: createProperty('string', true, [], 'app-sqlserver'),
+            location: createProperty('string', true, ['East US', 'West US', 'Central US'], 'East US'),
+            resource_group_name: createProperty('string', true, [], 'app-resources'),
+            version: createProperty('string', false, ['12.0', '11.0'], '12.0'),
+            administrator_login: createProperty('string', true, [], 'sqladmin'),
+            administrator_login_password: createProperty('string', true, [], 'changeme')
           }
         }
       ];
