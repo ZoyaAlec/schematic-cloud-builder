@@ -13,6 +13,7 @@ import {
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { ResourceProperty } from '@/types/resource';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface PropertyRendererProps {
   obj: any;
@@ -117,7 +118,7 @@ const PropertyRenderer: React.FC<PropertyRendererProps> = ({
                 }}
               >
                 <SelectTrigger className="text-xs">
-                  <SelectValue placeholder={propertyOptions[0]} />
+                  <SelectValue placeholder={`Select ${key}`} />
                 </SelectTrigger>
                 <SelectContent className="bg-background">
                   {propertyOptions.map((option) => (
@@ -144,7 +145,8 @@ const PropertyRenderer: React.FC<PropertyRendererProps> = ({
             ) : (
               <Input
                 id={`property-${fullKey}`}
-                value={String(selectedValue ?? '')}
+                value={String(selectedValue || '')}
+                placeholder={`Fill in the ${key}`}
                 type={propertyType === 'number' ? 'number' : 'text'}
                 onChange={(e) => {
                   const newValue = propertyType === 'number' ? 
@@ -152,7 +154,7 @@ const PropertyRenderer: React.FC<PropertyRendererProps> = ({
                   const updatedValue = {...propValue, value: newValue};
                   onPropertyChange(key, updatedValue);
                 }}
-                className="text-xs"
+                className="text-xs placeholder:text-muted-foreground"
               />
             )}
           </div>
@@ -194,12 +196,13 @@ const PropertyRenderer: React.FC<PropertyRendererProps> = ({
               ) : (
                 <Input
                   value={String(item ?? '')}
+                  placeholder={`Fill in ${key} item ${index+1}`}
                   onChange={(e) => {
                     const newArr = [...propValue];
                     newArr[index] = e.target.value;
                     onPropertyChange(key, newArr);
                   }}
-                  className="mt-1 text-xs"
+                  className="mt-1 text-xs placeholder:text-muted-foreground"
                 />
               )}
             </div>
@@ -234,7 +237,7 @@ const PropertyRenderer: React.FC<PropertyRendererProps> = ({
               onValueChange={(newValue) => onPropertyChange(key, newValue)}
             >
               <SelectTrigger className="text-xs">
-                <SelectValue placeholder={propertyOptions[0]} />
+                <SelectValue placeholder={`Select ${key}`} />
               </SelectTrigger>
               <SelectContent className="bg-background">
                 {propertyOptions.map((option) => (
@@ -259,13 +262,14 @@ const PropertyRenderer: React.FC<PropertyRendererProps> = ({
             <Input
               id={`property-${fullKey}`}
               value={String(propValue ?? '')}
+              placeholder={`Fill in the ${key}`}
               type={valueType === 'number' ? 'number' : 'text'}
               onChange={(e) => {
                 const newValue = valueType === 'number' ? 
                   Number(e.target.value) : e.target.value;
                 onPropertyChange(key, newValue);
               }}
-              className="text-xs"
+              className="text-xs placeholder:text-muted-foreground"
             />
           )}
         </div>

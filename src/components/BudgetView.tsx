@@ -2,6 +2,7 @@
 import React from 'react';
 import { DollarSign } from 'lucide-react';
 import { ResourceItem } from '@/types/resource';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface BudgetViewProps {
   provider: 'aws' | 'azure';
@@ -12,7 +13,12 @@ interface BudgetViewProps {
 const BudgetView: React.FC<BudgetViewProps> = ({ provider, isAiGenerated = false, placedResources }) => {
   // Filter resources by provider
   const filteredResources = placedResources.filter(resource => resource.provider === provider);
-  const totalCost = filteredResources.reduce((sum, item) => sum + item.cost, 0);
+  
+  // Calculate total cost including the count of each resource
+  const totalCost = filteredResources.reduce((sum, item) => {
+    const itemCount = item.count || 1;
+    return sum + (item.cost * itemCount);
+  }, 0);
   
   return (
     <div className="p-6">
@@ -35,30 +41,37 @@ const BudgetView: React.FC<BudgetViewProps> = ({ provider, isAiGenerated = false
           </div>
         </div>
         
-        <div>
-          <h4 className="font-semibold mb-4">Detailed Breakdown</h4>
-          
-          <div className="space-y-4">
-            {filteredResources.length > 0 ? (
-              filteredResources.map((item, index) => (
-                <div key={index} className="flex justify-between items-center">
-                  <div>
-                    <div className="font-medium">{item.name}</div>
-                    <div className="text-sm text-muted-foreground">{item.costDetails}</div>
-                  </div>
-                  <div className="text-lg font-semibold flex items-center">
-                    <DollarSign className="h-4 w-4 mr-1 text-muted-foreground" />
-                    <span>{item.cost.toFixed(2)}</span>
-                  </div>
+        <ScrollArea className="h-[300px] pr-4">
+          <div>
+            <h4 className="font-semibold mb-4">Detailed Breakdown</h4>
+            
+            <div className="space-y-4">
+              {filteredResources.length > 0 ? (
+                filteredResources.map((item, index) => {
+                  const itemCount = item.count || 1;
+                  const totalItemCost = item.cost * itemCount;
+                  
+                  return (
+                    <div key={index} className="flex justify-between items-center">
+                      <div>
+                        <div className="font-medium">{item.name} {itemCount > 1 ? `(${itemCount})` : ''}</div>
+                        <div className="text-sm text-muted-foreground">{item.costDetails || `${item.terraformType || item.type}`}</div>
+                      </div>
+                      <div className="text-lg font-semibold flex items-center">
+                        <DollarSign className="h-4 w-4 mr-1 text-muted-foreground" />
+                        <span>{totalItemCost.toFixed(2)}</span>
+                      </div>
+                    </div>
+                  );
+                })
+              ) : (
+                <div className="text-center py-6 text-muted-foreground">
+                  <p>No resources added yet. Add resources in the Design tab to see cost estimates.</p>
                 </div>
-              ))
-            ) : (
-              <div className="text-center py-6 text-muted-foreground">
-                <p>No resources added yet. Add resources in the Design tab to see cost estimates.</p>
-              </div>
-            )}
+              )}
+            </div>
           </div>
-        </div>
+        </ScrollArea>
       </div>
       
       <div className="cloud-card p-6">

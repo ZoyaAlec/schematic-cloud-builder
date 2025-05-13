@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { ResourceItem, ResourceProperty } from '@/types/resource';
 import { Input } from '@/components/ui/input';
@@ -6,6 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import PropertyRenderer from './PropertyRenderer';
 import { copyToClipboard } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface AdvancedPropertiesTabProps {
   resource: ResourceItem;
@@ -65,13 +67,24 @@ const AdvancedPropertiesTab: React.FC<AdvancedPropertiesTabProps> = ({
     return cleaned;
   };
   
+  // Function to recursively clean connections by removing metadata
+  const cleanConnectionsForExport = (connections: any[]) => {
+    if (!connections || !connections.length) return [];
+    
+    return connections.map(conn => ({
+      sourceId: conn.sourceId,
+      targetId: conn.targetId,
+      type: conn.type
+    }));
+  };
+  
   const resourceJson = {
     id: resource.id,
     type: resource.terraformType,
     name: resource.name,
     count: resource.count,
     properties: cleanPropertiesForExport(resource.properties),
-    connections: resource.connections
+    connections: cleanConnectionsForExport(resource.connections)
   };
   
   const handleCopyJson = () => {
@@ -99,14 +112,16 @@ const AdvancedPropertiesTab: React.FC<AdvancedPropertiesTabProps> = ({
       
       <div className="space-y-4 mt-4">
         <h4 className="text-sm font-medium">Properties</h4>
-        <div className="space-y-3">
-          {resource.properties && (
-            <PropertyRenderer 
-              obj={resource.properties} 
-              onPropertyChange={onPropertyChange} 
-            />
-          )}
-        </div>
+        <ScrollArea className="h-[300px] pr-4">
+          <div className="space-y-3">
+            {resource.properties && (
+              <PropertyRenderer 
+                obj={resource.properties} 
+                onPropertyChange={onPropertyChange} 
+              />
+            )}
+          </div>
+        </ScrollArea>
       </div>
       
       <div className="space-y-2 mt-4">
