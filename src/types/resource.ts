@@ -1,19 +1,16 @@
 
 import { LucideIcon } from 'lucide-react';
 
-export interface ResourceProperty {
-  name: string;
-  value: string;
-  description?: string;
-  type?: 'string' | 'number' | 'boolean' | 'object';
-  required?: boolean;
-  options?: string[];
-}
-
 export interface Connection {
   sourceId: string;
   targetId: string;
   type: string;
+}
+
+export interface ResourceProperty {
+    type: string;
+    required: boolean;
+    options: string[];
 }
 
 export interface ResourceItem {
@@ -30,8 +27,8 @@ export interface ResourceItem {
   y?: number;
   count?: number;
   connections?: Connection[];
-  properties?: {
-    [key: string]: any;
+    properties?: {
+        [key: string]: ResourceProperty;
   };
 }
 
