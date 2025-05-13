@@ -58,6 +58,15 @@ const AdvancedPropertiesTab: React.FC<AdvancedPropertiesTabProps> = ({
         // Recursively clean nested objects
         cleaned[key] = cleanPropertiesForExport(value);
       }
+      // For arrays of objects
+      else if (Array.isArray(value)) {
+        cleaned[key] = value.map(item => {
+          if (item && typeof item === 'object') {
+            return cleanPropertiesForExport(item);
+          }
+          return item;
+        });
+      }
       // For arrays and primitive values
       else {
         cleaned[key] = value;
@@ -80,9 +89,9 @@ const AdvancedPropertiesTab: React.FC<AdvancedPropertiesTabProps> = ({
   
   const resourceJson = {
     id: resource.id,
-    type: resource.terraformType,
+    type: resource.terraformType || resource.type,
     name: resource.name,
-    count: resource.count,
+    count: resource.count || 1,
     properties: cleanPropertiesForExport(resource.properties),
     connections: cleanConnectionsForExport(resource.connections)
   };

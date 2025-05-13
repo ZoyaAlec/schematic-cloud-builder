@@ -8,6 +8,7 @@ import BasicPropertiesTab from './resource-panels/BasicPropertiesTab';
 import AdvancedPropertiesTab from './resource-panels/AdvancedPropertiesTab';
 import ConnectionsTab from './resource-panels/ConnectionsTab';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Cloud_Resources } from '@/Config/Resources/Cloud_Resources';
 
 interface ResourcePropertiesPanelProps {
   resource: ResourceItem | null;
@@ -51,239 +52,19 @@ const ResourcePropertiesPanel: React.FC<ResourcePropertiesPanelProps> = ({
 
   // Initialize default properties if they don't exist
   if (!editedResource.properties) {
-    const defaultProps: {[key: string]: any} = {};
+    // Find matching resource template from Cloud_Resources
+    const resourceTemplate = Cloud_Resources.find(
+      r => r.provider === editedResource.provider && r.type === editedResource.type
+    );
+
+    // Use template properties or create empty object if not found
+    const defaultProps = resourceTemplate && resourceTemplate.properties 
+      ? JSON.parse(JSON.stringify(resourceTemplate.properties))  // Deep clone
+      : {};
     
-    // Add default properties based on provider and type
-    if (editedResource.provider === 'aws') {
-      defaultProps['region'] = {
-        type: 'string',
-        required: true,
-        options: ['us-east-1', 'us-west-1', 'us-west-2', 'eu-west-1'],
-        value: 'us-east-1'
-      };
-      
-      if (editedResource.type === 'compute') {
-        defaultProps['ami'] = {
-          type: 'string',
-          required: true,
-          options: [],
-          value: 'ami-0c55b159cbfafe1f0'
-        };
-        defaultProps['instance_type'] = {
-          type: 'list',
-          required: true,
-          options: ['t2.micro', 't2.small', 't2.medium', 't3.micro', 't3.small'],
-          value: 't2.micro'
-        };
-        defaultProps['key_name'] = {
-          type: 'string',
-          required: false,
-          options: [],
-          value: ''
-        };
-        defaultProps['subnet_id'] = {
-          type: 'string',
-          required: true,
-          options: [],
-          value: ''
-        };
-        defaultProps['availability_zone'] = {
-          type: 'string',
-          required: false,
-          options: ['us-east-1a', 'us-east-1b', 'us-east-1c'],
-          value: 'us-east-1a'
-        };
-        defaultProps['tags'] = { 
-          'Name': {
-            type: 'string',
-            required: false,
-            options: [],
-            value: editedResource.name
-          }
-        };
-        editedResource.terraformType = 'aws_instance';
-      } else if (editedResource.type === 'storage') {
-        defaultProps['bucket'] = {
-          type: 'string',
-          required: true,
-          options: [],
-          value: editedResource.name.toLowerCase().replace(/[^a-z0-9-]/g, '-')
-        };
-        defaultProps['acl'] = {
-          type: 'list',
-          required: false,
-          options: ['private', 'public-read', 'public-read-write'],
-          value: 'private'
-        };
-        defaultProps['versioning'] = { 
-          'enabled': {
-            type: 'boolean',
-            required: false,
-            options: [],
-            value: true
-          }
-        };
-        editedResource.terraformType = 'aws_s3_bucket';
-      } else if (editedResource.type === 'database') {
-        defaultProps['engine'] = {
-          type: 'list',
-          required: true,
-          options: ['mysql', 'postgres', 'oracle', 'sqlserver'],
-          value: 'mysql'
-        };
-        defaultProps['instance_class'] = {
-          type: 'list',
-          required: true,
-          options: ['db.t3.micro', 'db.t3.small', 'db.t3.medium', 'db.r5.large'],
-          value: 'db.t3.medium'
-        };
-        defaultProps['allocated_storage'] = {
-          type: 'number',
-          required: true,
-          options: [],
-          value: 20
-        };
-        defaultProps['storage_type'] = {
-          type: 'list',
-          required: false,
-          options: ['gp2', 'io1', 'standard'],
-          value: 'gp2'
-        };
-        defaultProps['multi_az'] = {
-          type: 'boolean',
-          required: false,
-          options: [],
-          value: true
-        };
-        editedResource.terraformType = 'aws_db_instance';
-      } else if (editedResource.type === 'network') {
-        defaultProps['name'] = {
-          type: 'string',
-          required: true,
-          options: [],
-          value: editedResource.name
-        };
-        defaultProps['cidr_block'] = {
-          type: 'string',
-          required: true,
-          options: [],
-          value: '10.0.0.0/16'
-        };
-        editedResource.terraformType = 'aws_vpc';
-      } else if (editedResource.type === 'security') {
-        defaultProps['name'] = {
-          type: 'string',
-          required: true,
-          options: [],
-          value: editedResource.name
-        };
-        defaultProps['description'] = {
-          type: 'string',
-          required: false,
-          options: [],
-          value: 'Security group for ' + editedResource.name
-        };
-        defaultProps['ingress'] = [
-          {
-            'from_port': {
-              type: 'number',
-              required: true,
-              options: [],
-              value: 80
-            },
-            'to_port': {
-              type: 'number',
-              required: true,
-              options: [],
-              value: 80
-            },
-            'protocol': {
-              type: 'string',
-              required: true,
-              options: [],
-              value: 'tcp'
-            },
-            'cidr_blocks': {
-              type: 'list',
-              required: true,
-              options: [],
-              value: ['0.0.0.0/0']
-            }
-          }
-        ];
-        editedResource.terraformType = 'aws_security_group';
-      }
-    } else {
-      defaultProps['location'] = {
-        type: 'list',
-        required: true,
-        options: ['East US', 'West US', 'Central US', 'North Europe'],
-        value: 'East US'
-      };
-      defaultProps['resource_group_name'] = {
-        type: 'string',
-        required: true,
-        options: [],
-        value: 'default-rg'
-      };
-      
-      if (editedResource.type === 'compute') {
-        defaultProps['vm_size'] = {
-          type: 'list',
-          required: true,
-          options: ['Standard_D2s_v3', 'Standard_D4s_v3', 'Standard_B2s', 'Standard_F2s_v2'],
-          value: 'Standard_D2s_v3'
-        };
-        defaultProps['admin_username'] = {
-          type: 'string',
-          required: true,
-          options: [],
-          value: 'adminuser'
-        };
-        editedResource.terraformType = 'azurerm_virtual_machine';
-      } else if (editedResource.type === 'storage') {
-        defaultProps['account_tier'] = {
-          type: 'list',
-          required: true,
-          options: ['Standard', 'Premium'],
-          value: 'Standard'
-        };
-        defaultProps['account_replication_type'] = {
-          type: 'list',
-          required: true,
-          options: ['LRS', 'GRS', 'RAGRS', 'ZRS'],
-          value: 'GRS'
-        };
-        editedResource.terraformType = 'azurerm_storage_account';
-      } else if (editedResource.type === 'database') {
-        defaultProps['sku_name'] = {
-          type: 'list',
-          required: true,
-          options: ['GP_Gen5_2', 'GP_Gen5_4', 'BC_Gen5_2'],
-          value: 'GP_Gen5_2'
-        };
-        defaultProps['administrator_login'] = {
-          type: 'string',
-          required: true,
-          options: [],
-          value: 'sqladmin'
-        };
-        defaultProps['version'] = {
-          type: 'list',
-          required: true,
-          options: ['12.0', '11.0', '10.0'],
-          value: '12.0'
-        };
-        editedResource.terraformType = 'azurerm_sql_server';
-      } else if (editedResource.type === 'network') {
-        defaultProps['address_space'] = {
-          type: 'list',
-          required: true,
-          options: [],
-          value: ['10.0.0.0/16']
-        };
-        editedResource.terraformType = 'azurerm_virtual_network';
-      }
+    // Set terraform type from template if available
+    if (resourceTemplate && resourceTemplate.terraformType) {
+      editedResource.terraformType = resourceTemplate.terraformType;
     }
     
     setEditedResource({
@@ -397,7 +178,14 @@ const ResourcePropertiesPanel: React.FC<ResourcePropertiesPanelProps> = ({
       if (updatedResource.type === 'compute') {
         // Calculate cost based on instance type for AWS
         if (updatedResource.provider === 'aws') {
-          const instanceType = updatedResource.properties?.instance_type?.value || 't2.micro';
+          const instanceTypeProperty = updatedResource.properties?.instance_type;
+          const instanceType = 
+            instanceTypeProperty && 
+            typeof instanceTypeProperty === 'object' &&
+            'value' in instanceTypeProperty 
+              ? instanceTypeProperty.value 
+              : 't2.micro';
+          
           const instanceCosts: {[key: string]: number} = {
             't2.micro': 0.0116,
             't2.small': 0.023,
