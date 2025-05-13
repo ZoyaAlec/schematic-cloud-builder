@@ -54,15 +54,47 @@ const ResourcePropertiesPanel: React.FC<ResourcePropertiesPanelProps> = ({
     
     // Add default properties based on provider and type
     if (editedResource.provider === 'aws') {
-      defaultProps['region'] = 'us-east-1';
+      defaultProps['region'] = {
+        type: 'string',
+        required: true,
+        options: ['us-east-1', 'us-west-1', 'us-west-2', 'eu-west-1'],
+        value: 'us-east-1'
+      };
       
       if (editedResource.type === 'compute') {
-        defaultProps['ami'] = 'ami-0c55b159cbfafe1f0';
-        defaultProps['instance_type'] = 't2.micro';
-        defaultProps['tags'] = { 'Name': editedResource.name };
+        defaultProps['ami'] = {
+          type: 'string',
+          required: true,
+          options: [],
+          value: 'ami-0c55b159cbfafe1f0'
+        };
+        defaultProps['instance_type'] = {
+          type: 'list',
+          required: true,
+          options: ['t2.micro', 't2.small', 't2.medium', 't3.micro', 't3.small'],
+          value: 't2.micro'
+        };
+        defaultProps['key_name'] = {
+          type: 'string',
+          required: false,
+          options: [],
+          value: ''
+        };
+        defaultProps['subnet_id'] = {
+          type: 'string',
+          required: true,
+          options: [],
+          value: ''
+        };
+        defaultProps['tags'] = { 
+          'Name': {
+            type: 'string',
+            required: false,
+            options: [],
+            value: editedResource.name
+          }
+        };
         editedResource.terraformType = 'aws_instance';
-        defaultProps['key_name'] = '';
-        defaultProps['subnet_id'] = '';
       } else if (editedResource.type === 'storage') {
         defaultProps['bucket'] = editedResource.name.toLowerCase().replace(/[^a-z0-9-]/g, '-');
         defaultProps['acl'] = 'private';
@@ -93,8 +125,18 @@ const ResourcePropertiesPanel: React.FC<ResourcePropertiesPanelProps> = ({
         editedResource.terraformType = 'aws_security_group';
       }
     } else {
-      defaultProps['location'] = 'East US';
-      defaultProps['resource_group_name'] = 'default-rg';
+      defaultProps['location'] = {
+        type: 'list',
+        required: true,
+        options: ['East US', 'West US', 'Central US', 'North Europe'],
+        value: 'East US'
+      };
+      defaultProps['resource_group_name'] = {
+        type: 'string',
+        required: true,
+        options: [],
+        value: 'default-rg'
+      };
       
       if (editedResource.type === 'compute') {
         defaultProps['vm_size'] = 'Standard_D2s_v3';

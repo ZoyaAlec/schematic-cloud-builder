@@ -57,38 +57,48 @@ const PropertyRenderer: React.FC<PropertyRendererProps> = ({
       // Check if this is a metadata object or a nested object
       if ((Object.prototype.hasOwnProperty.call(propValue, 'type') || 
            Object.prototype.hasOwnProperty.call(propValue, 'required') || 
-           Object.prototype.hasOwnProperty.call(propValue, 'options')) && 
-          !Object.prototype.hasOwnProperty.call(propValue, 'value') && 
-          Object.keys(propValue).some(k => k !== 'type' && k !== 'required' && k !== 'options')) {
-        // This is a nested object with properties, render recursively
-        return (
-          <div key={fullKey} className="ml-4 mt-3">
-            <div className="text-sm font-medium mb-1">
-              {key}
-              {isRequired && <Asterisk className="h-3 w-3 inline ml-1 text-red-500" />}
-            </div>
-            <PropertyRenderer 
-              obj={propValue} 
-              prefix={fullKey} 
-              onPropertyChange={onPropertyChange}
-            />
-          </div>
-        );
-      }
-      
-      // For objects with a "value" property, access that value
-      if (Object.prototype.hasOwnProperty.call(propValue, 'value')) {
-        const actualValue = (propValue as any).value;
+           Object.prototype.hasOwnProperty.call(propValue, 'options'))) {
+        
+        // If this object has value property or additional properties that aren't metadata
+        if (Object.prototype.hasOwnProperty.call(propValue, 'value') || 
+            Object.keys(propValue).some(k => 
+              k !== 'type' && 
+              k !== 'required' && 
+              k !== 'options' && 
+              k !== 'value')) {
+          
+          // Check if this is a nested object (not just a ResourceProperty with value)
+          if (Object.keys(propValue).some(k => 
+              k !== 'type' && 
+              k !== 'required' && 
+              k !== 'options' && 
+              k !== 'value' && 
+              typeof (propValue as any)[k] === 'object')) {
+            
+            // This is a nested object with properties, render recursively
+            return (
+              <div key={fullKey} className="ml-4 mt-3">
+                <div className="text-sm font-medium mb-1">
+                  {key}
+                  {isRequired && <Asterisk className="h-3 w-3 inline ml-1 text-red-500" />}
+                </div>
+                <PropertyRenderer 
+                  obj={propValue} 
+                  prefix={fullKey} 
+                  onPropertyChange={onPropertyChange}
+                />
+              </div>
+            );
+          }
+        }
+        
+        // For objects with a "value" property or objects that should render a control
+        const actualValue = Object.prototype.hasOwnProperty.call(propValue, 'value') 
+          ? (propValue as any).value 
+          : propValue;
+        
         const selectedValue = actualValue !== undefined ? actualValue : 
                           (propertyOptions && propertyOptions.length > 0 ? propertyOptions[0] : '');
-        
-        // Skip rendering if the type is not one of the supported types
-        if (propertyType !== 'string' && 
-            propertyType !== 'number' && 
-            propertyType !== 'boolean' && 
-            propertyType !== 'list') {
-          return null;
-        }
         
         // Render the appropriate input control
         return (
