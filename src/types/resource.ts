@@ -11,7 +11,7 @@ export interface ResourceProperty {
   type: string;
   required: boolean;
   options: string[];
-  value?: any; // Adding value property to store the actual value
+  value?: any; // Value property to store the actual value
 }
 
 export interface ResourceItem {

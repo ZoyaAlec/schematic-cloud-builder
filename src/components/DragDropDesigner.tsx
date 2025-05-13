@@ -1,7 +1,7 @@
 import React, { useState, useRef, useCallback } from 'react';
 import { Database, Server, Cloud, Trash, Info, Network, Shield, Link } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { ResourceItem, ArchitectureDesign, Connection, ResourceExport } from '@/types/resource';
+import { ResourceItem, ArchitectureDesign, Connection, ResourceExport, ResourceProperty } from '@/types/resource';
 import { useToast } from '@/hooks/use-toast';
 import ResourcePropertiesPanel from './ResourcePropertiesPanel';
 import { ResizablePanelGroup, ResizablePanel } from '@/components/ui/resizable';
@@ -297,11 +297,26 @@ const DragDropDesigner: React.FC<DragDropDesignerProps> = ({
       };
     });
     
+    // Get region from the first resource or use default
+    let regionValue: string = initialProvider === 'aws' ? 'us-east-1' : 'eastus';
+    
+    // Try to extract region value from the first resource
+    if (placedResources.length > 0 && placedResources[0].properties?.region) {
+      const regionProp = placedResources[0].properties.region;
+      
+      // Check if region is a ResourceProperty object with a value property
+      if (typeof regionProp === 'object' && regionProp !== null && 'value' in regionProp) {
+        regionValue = regionProp.value as string;
+      }
+      // If it's a string directly
+      else if (typeof regionProp === 'string') {
+        regionValue = regionProp;
+      }
+    }
+    
     const architecture: ArchitectureDesign = {
       provider: initialProvider,
-      region: placedResources.length > 0 && placedResources[0].properties?.region 
-        ? placedResources[0].properties.region 
-        : initialProvider === 'aws' ? 'us-east-1' : 'eastus',
+      region: regionValue,
       resources: cleanResources,
       variables: [],
       outputs: []

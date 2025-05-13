@@ -31,7 +31,7 @@ const BasicPropertiesTab: React.FC<BasicPropertiesTabProps> = ({
           'options' in propValue && 
           Array.isArray((propValue as ResourceProperty).options) && 
           (propValue as ResourceProperty).options.length > 0 &&
-          !(propValue as any).value // Only set if value is not already set
+          !('value' in propValue) // Only set if value is not already set
         ) {
           // Create a new property object with the first option as the value
           const updatedPropValue = {
