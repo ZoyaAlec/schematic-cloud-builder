@@ -15,7 +15,7 @@ import { Label } from '@/components/ui/label';
 import { ResourceProperty } from '@/types/resource';
 
 interface PropertyDefinition {
-  type?: 'string' | 'number' | 'boolean' | 'object';
+  type?: 'string' | 'number' | 'boolean' | 'object' | string[];
   required?: boolean;
   options?: string[];
   description?: string;
@@ -48,30 +48,29 @@ const PropertyRenderer: React.FC<PropertyRendererProps> = ({
     
     // Extract metadata properties if they exist
     let isRequired = false;
-    let propertyType: 'string' | 'number' | 'boolean' | 'object' = 'string';
-    let propertyOptions: string[] | undefined;
+    let propertyType: string = 'string';
+    let propertyOptions: string[] = [];
     
     // Handle the case where value is a metadata object with type, required, options
     if (value !== null && typeof value === 'object' && !Array.isArray(value)) {
-      if ('required' in value) {
+      if (Object.prototype.hasOwnProperty.call(value, 'required')) {
         isRequired = Boolean(value.required);
       }
       
-      if ('type' in value) {
-        // Convert the type string to our allowed types
-        const typeValue = String(value.type);
-        if (typeValue === 'string' || typeValue === 'number' || typeValue === 'boolean' || typeValue === 'object') {
-          propertyType = typeValue as 'string' | 'number' | 'boolean' | 'object';
-        }
+      if (Object.prototype.hasOwnProperty.call(value, 'type')) {
+        propertyType = String(value.type);
       }
       
-      if ('options' in value && Array.isArray(value.options)) {
-        propertyOptions = value.options as string[];
+      if (Object.prototype.hasOwnProperty.call(value, 'options') && Array.isArray(value.options)) {
+        propertyOptions = value.options;
       }
       
       // Check if this is a metadata object or a nested object
-      if (('type' in value || 'required' in value || 'options' in value) && 
-          !('value' in value) && Object.keys(value).some(k => k !== 'type' && k !== 'required' && k !== 'options')) {
+      if ((Object.prototype.hasOwnProperty.call(value, 'type') || 
+           Object.prototype.hasOwnProperty.call(value, 'required') || 
+           Object.prototype.hasOwnProperty.call(value, 'options')) && 
+          !Object.prototype.hasOwnProperty.call(value, 'value') && 
+          Object.keys(value).some(k => k !== 'type' && k !== 'required' && k !== 'options')) {
         // This is a nested object with properties, render recursively
         return (
           <div key={fullKey} className="ml-4 mt-3">
@@ -90,10 +89,10 @@ const PropertyRenderer: React.FC<PropertyRendererProps> = ({
       }
       
       // For objects with a "value" property, access that value
-      if ('value' in value) {
-        const actualValue = (value as any).value;
+      if (Object.prototype.hasOwnProperty.call(value, 'value')) {
+        const actualValue = value.value;
         const selectedValue = actualValue !== undefined ? actualValue : 
-                            (propertyOptions && propertyOptions.length > 0 ? propertyOptions[0] : '');
+                          (propertyOptions && propertyOptions.length > 0 ? propertyOptions[0] : '');
         
         // Render the appropriate input control
         return (
@@ -114,7 +113,7 @@ const PropertyRenderer: React.FC<PropertyRendererProps> = ({
                 <SelectTrigger className="text-xs">
                   <SelectValue placeholder={propertyOptions[0]} />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-background">
                   {propertyOptions.map((option) => (
                     <SelectItem key={option} value={option} className="text-xs">
                       {option}
@@ -216,11 +215,10 @@ const PropertyRenderer: React.FC<PropertyRendererProps> = ({
       );
     } else {
       // Handle basic values (string, number, boolean)
-      // Determine the property type based on the actual value
       const valueType = typeof value;
-      const displayType: 'boolean' | 'number' | 'string' = 
-        valueType === 'boolean' ? 'boolean' : 
-        valueType === 'number' ? 'number' : 'string';
+      
+      // Get property options from metadata if available
+      let hasOptions = propertyOptions && propertyOptions.length > 0;
       
       return (
         <div key={fullKey} className="flex flex-col space-y-1 mt-3">
@@ -229,16 +227,15 @@ const PropertyRenderer: React.FC<PropertyRendererProps> = ({
             {isRequired && <Asterisk className="h-3 w-3 inline ml-1 text-red-500" />}
           </label>
           
-          {propertyOptions && propertyOptions.length > 0 ? (
+          {hasOptions ? (
             <Select
               value={String(value)}
               onValueChange={(newValue) => onPropertyChange(key, newValue)}
-              defaultValue={propertyOptions[0]}
             >
               <SelectTrigger className="text-xs">
                 <SelectValue placeholder={propertyOptions[0]} />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-background">
                 {propertyOptions.map((option) => (
                   <SelectItem key={option} value={option} className="text-xs">
                     {option}
@@ -246,7 +243,7 @@ const PropertyRenderer: React.FC<PropertyRendererProps> = ({
                 ))}
               </SelectContent>
             </Select>
-          ) : displayType === 'boolean' ? (
+          ) : valueType === 'boolean' ? (
             <div className="flex items-center space-x-2">
               <Switch
                 id={`property-switch-${fullKey}`}
@@ -261,9 +258,9 @@ const PropertyRenderer: React.FC<PropertyRendererProps> = ({
             <Input
               id={`property-${fullKey}`}
               value={String(value ?? '')}
-              type={displayType === 'number' ? 'number' : 'text'}
+              type={valueType === 'number' ? 'number' : 'text'}
               onChange={(e) => {
-                const newValue = displayType === 'number' ? 
+                const newValue = valueType === 'number' ? 
                   Number(e.target.value) : e.target.value;
                 onPropertyChange(key, newValue);
               }}
