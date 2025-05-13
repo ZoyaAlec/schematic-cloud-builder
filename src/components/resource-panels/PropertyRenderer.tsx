@@ -14,31 +14,18 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { ResourceProperty } from '@/types/resource';
 
-interface PropertyDefinition {
-  type?: 'string' | 'number' | 'boolean' | 'object' | string[];
-  required?: boolean;
-  options?: string[];
-  description?: string;
-}
-
-interface PropertyMetadata {
-  [key: string]: PropertyDefinition;
-}
-
 interface PropertyRendererProps {
   obj: any;
   prefix?: string;
   onPropertyChange: (key: string, value: any) => void;
-  metadata?: PropertyMetadata;
 }
 
 const PropertyRenderer: React.FC<PropertyRendererProps> = ({ 
   obj, 
   prefix = '', 
-  onPropertyChange,
-  metadata = {}
+  onPropertyChange
 }) => {
-  return Object.entries(obj).map(([key, value]) => {
+  return Object.entries(obj).map(([key, propValue]) => {
     // Skip rendering metadata properties that aren't meant for display
     if (key === 'type' || key === 'required' || key === 'options') {
       return null;
@@ -48,29 +35,31 @@ const PropertyRenderer: React.FC<PropertyRendererProps> = ({
     
     // Extract metadata properties if they exist
     let isRequired = false;
-    let propertyType: string = 'string';
+    let propertyType = 'string';
     let propertyOptions: string[] = [];
     
-    // Handle the case where value is a metadata object with type, required, options
-    if (value !== null && typeof value === 'object' && !Array.isArray(value)) {
-      if (Object.prototype.hasOwnProperty.call(value, 'required')) {
-        isRequired = Boolean(value.required);
+    // Handle the case where value is a ResourceProperty object with type, required, options
+    if (propValue !== null && typeof propValue === 'object' && !Array.isArray(propValue)) {
+      // Type guard to check if the property has the required fields
+      if (Object.prototype.hasOwnProperty.call(propValue, 'required')) {
+        isRequired = Boolean((propValue as ResourceProperty).required);
       }
       
-      if (Object.prototype.hasOwnProperty.call(value, 'type')) {
-        propertyType = String(value.type);
+      if (Object.prototype.hasOwnProperty.call(propValue, 'type')) {
+        propertyType = String((propValue as ResourceProperty).type);
       }
       
-      if (Object.prototype.hasOwnProperty.call(value, 'options') && Array.isArray(value.options)) {
-        propertyOptions = value.options;
+      if (Object.prototype.hasOwnProperty.call(propValue, 'options') && 
+          Array.isArray((propValue as ResourceProperty).options)) {
+        propertyOptions = (propValue as ResourceProperty).options;
       }
       
       // Check if this is a metadata object or a nested object
-      if ((Object.prototype.hasOwnProperty.call(value, 'type') || 
-           Object.prototype.hasOwnProperty.call(value, 'required') || 
-           Object.prototype.hasOwnProperty.call(value, 'options')) && 
-          !Object.prototype.hasOwnProperty.call(value, 'value') && 
-          Object.keys(value).some(k => k !== 'type' && k !== 'required' && k !== 'options')) {
+      if ((Object.prototype.hasOwnProperty.call(propValue, 'type') || 
+           Object.prototype.hasOwnProperty.call(propValue, 'required') || 
+           Object.prototype.hasOwnProperty.call(propValue, 'options')) && 
+          !Object.prototype.hasOwnProperty.call(propValue, 'value') && 
+          Object.keys(propValue).some(k => k !== 'type' && k !== 'required' && k !== 'options')) {
         // This is a nested object with properties, render recursively
         return (
           <div key={fullKey} className="ml-4 mt-3">
@@ -79,20 +68,27 @@ const PropertyRenderer: React.FC<PropertyRendererProps> = ({
               {isRequired && <Asterisk className="h-3 w-3 inline ml-1 text-red-500" />}
             </div>
             <PropertyRenderer 
-              obj={value} 
+              obj={propValue} 
               prefix={fullKey} 
               onPropertyChange={onPropertyChange}
-              metadata={metadata}
             />
           </div>
         );
       }
       
       // For objects with a "value" property, access that value
-      if (Object.prototype.hasOwnProperty.call(value, 'value')) {
-        const actualValue = value.value;
+      if (Object.prototype.hasOwnProperty.call(propValue, 'value')) {
+        const actualValue = (propValue as any).value;
         const selectedValue = actualValue !== undefined ? actualValue : 
                           (propertyOptions && propertyOptions.length > 0 ? propertyOptions[0] : '');
+        
+        // Skip rendering if the type is not one of the supported types
+        if (propertyType !== 'string' && 
+            propertyType !== 'number' && 
+            propertyType !== 'boolean' && 
+            propertyType !== 'list') {
+          return null;
+        }
         
         // Render the appropriate input control
         return (
@@ -102,11 +98,11 @@ const PropertyRenderer: React.FC<PropertyRendererProps> = ({
               {isRequired && <Asterisk className="h-3 w-3 inline ml-1 text-red-500" />}
             </label>
             
-            {propertyOptions && propertyOptions.length > 0 ? (
+            {propertyType === 'list' && propertyOptions && propertyOptions.length > 0 ? (
               <Select
                 value={String(selectedValue)}
                 onValueChange={(newValue) => {
-                  const updatedValue = {...value, value: newValue};
+                  const updatedValue = {...propValue, value: newValue};
                   onPropertyChange(key, updatedValue);
                 }}
               >
@@ -127,7 +123,7 @@ const PropertyRenderer: React.FC<PropertyRendererProps> = ({
                   id={`property-switch-${fullKey}`}
                   checked={Boolean(selectedValue)}
                   onCheckedChange={(checked) => {
-                    const updatedValue = {...value, value: checked};
+                    const updatedValue = {...propValue, value: checked};
                     onPropertyChange(key, updatedValue);
                   }}
                 />
@@ -143,7 +139,7 @@ const PropertyRenderer: React.FC<PropertyRendererProps> = ({
                 onChange={(e) => {
                   const newValue = propertyType === 'number' ? 
                     Number(e.target.value) : e.target.value;
-                  const updatedValue = {...value, value: newValue};
+                  const updatedValue = {...propValue, value: newValue};
                   onPropertyChange(key, updatedValue);
                 }}
                 className="text-xs"
@@ -155,7 +151,7 @@ const PropertyRenderer: React.FC<PropertyRendererProps> = ({
     }
     
     // Handle nested objects (without metadata)
-    if (value !== null && typeof value === 'object' && !Array.isArray(value)) {
+    if (propValue !== null && typeof propValue === 'object' && !Array.isArray(propValue)) {
       return (
         <div key={fullKey} className="ml-4 mt-3">
           <div className="text-sm font-medium mb-1">
@@ -163,14 +159,13 @@ const PropertyRenderer: React.FC<PropertyRendererProps> = ({
             {isRequired && <Asterisk className="h-3 w-3 inline ml-1 text-red-500" />}
           </div>
           <PropertyRenderer 
-            obj={value} 
+            obj={propValue} 
             prefix={fullKey} 
             onPropertyChange={onPropertyChange}
-            metadata={metadata}
           />
         </div>
       );
-    } else if (Array.isArray(value)) {
+    } else if (Array.isArray(propValue)) {
       // Handle arrays
       return (
         <div key={fullKey} className="ml-4 mt-3">
@@ -178,20 +173,19 @@ const PropertyRenderer: React.FC<PropertyRendererProps> = ({
             {key} (array)
             {isRequired && <Asterisk className="h-3 w-3 inline ml-1 text-red-500" />}
           </div>
-          {value.map((item, index) => (
+          {propValue.map((item, index) => (
             <div key={`${fullKey}-${index}`} className="ml-4">
               {typeof item === 'object' && item !== null ? (
                 <PropertyRenderer 
                   obj={item} 
                   prefix={`${fullKey}[${index}]`} 
                   onPropertyChange={onPropertyChange}
-                  metadata={metadata}
                 />
               ) : (
                 <Input
                   value={String(item ?? '')}
                   onChange={(e) => {
-                    const newArr = [...value];
+                    const newArr = [...propValue];
                     newArr[index] = e.target.value;
                     onPropertyChange(key, newArr);
                   }}
@@ -204,7 +198,7 @@ const PropertyRenderer: React.FC<PropertyRendererProps> = ({
             variant="outline" 
             size="sm" 
             onClick={() => {
-              const newArr = [...value, ''];
+              const newArr = [...propValue, ''];
               onPropertyChange(key, newArr);
             }}
             className="mt-1 text-xs"
@@ -215,10 +209,7 @@ const PropertyRenderer: React.FC<PropertyRendererProps> = ({
       );
     } else {
       // Handle basic values (string, number, boolean)
-      const valueType = typeof value;
-      
-      // Get property options from metadata if available
-      let hasOptions = propertyOptions && propertyOptions.length > 0;
+      const valueType = typeof propValue;
       
       return (
         <div key={fullKey} className="flex flex-col space-y-1 mt-3">
@@ -227,9 +218,9 @@ const PropertyRenderer: React.FC<PropertyRendererProps> = ({
             {isRequired && <Asterisk className="h-3 w-3 inline ml-1 text-red-500" />}
           </label>
           
-          {hasOptions ? (
+          {propertyOptions && propertyOptions.length > 0 ? (
             <Select
-              value={String(value)}
+              value={String(propValue)}
               onValueChange={(newValue) => onPropertyChange(key, newValue)}
             >
               <SelectTrigger className="text-xs">
@@ -247,17 +238,17 @@ const PropertyRenderer: React.FC<PropertyRendererProps> = ({
             <div className="flex items-center space-x-2">
               <Switch
                 id={`property-switch-${fullKey}`}
-                checked={Boolean(value)}
+                checked={Boolean(propValue)}
                 onCheckedChange={(checked) => onPropertyChange(key, checked)}
               />
               <Label htmlFor={`property-switch-${fullKey}`} className="text-xs">
-                {Boolean(value) ? 'Enabled' : 'Disabled'}
+                {Boolean(propValue) ? 'Enabled' : 'Disabled'}
               </Label>
             </div>
           ) : (
             <Input
               id={`property-${fullKey}`}
-              value={String(value ?? '')}
+              value={String(propValue ?? '')}
               type={valueType === 'number' ? 'number' : 'text'}
               onChange={(e) => {
                 const newValue = valueType === 'number' ? 
