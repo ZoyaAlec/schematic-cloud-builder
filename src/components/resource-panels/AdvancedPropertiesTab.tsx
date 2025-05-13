@@ -37,12 +37,12 @@ const AdvancedPropertiesTab: React.FC<AdvancedPropertiesTabProps> = ({
       
       // If value is an object with metadata properties, extract just the actual value
       if (value !== null && typeof value === 'object' && !Array.isArray(value)) {
-        if ('options' in value && Array.isArray(value.options)) {
+        if (Object.prototype.hasOwnProperty.call(value, 'options') && Array.isArray((value as any).options)) {
           // For properties with options, just take the selected value
           if (Object.prototype.hasOwnProperty.call(value, 'value')) {
             cleaned[key] = (value as any).value;
-          } else if (Array.isArray(value.options) && value.options.length > 0) {
-            cleaned[key] = value.options[0];
+          } else if (Array.isArray((value as any).options) && (value as any).options.length > 0) {
+            cleaned[key] = (value as any).options[0];
           } else {
             cleaned[key] = null;
           }
